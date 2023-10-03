@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
+import com.alibaba.idst.nui.CommonUtils;
+
 // 1. UI 类
 public class UI extends Activity {
 
@@ -29,6 +31,8 @@ public class UI extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        CommonUtils.copyAssetsData(this);
 
         askView = (TextView) findViewById(R.id.askView);
         gptView = (TextView) findViewById(R.id.GPTView);

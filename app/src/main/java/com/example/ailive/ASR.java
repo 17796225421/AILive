@@ -25,7 +25,7 @@ import java.util.Objects;
 public class ASR implements INativeNuiCallback {
     // ASR 相关的方法和变量
     private static final String APPKEY = "8Xu8cELorObhV2cQ";
-    private static final String TOKEN = "90294235bb7e455b8e6a5fb308b92aff  ";
+    private static final String TOKEN = "90294235bb7e455b8e6a5fb308b92aff";
     private static final String URL = "wss://nls-gateway.cn-shanghai.aliyuncs.com:443/ws/v1";
     private AudioRecord mAudioRecorder;
     private Context context;
@@ -49,12 +49,14 @@ public class ASR implements INativeNuiCallback {
 
         String workspace = CommonUtils.getModelPath(context);
 
-        nui_instance.initialize(this, genInitParams(workspace), Constants.LogLevel.LOG_LEVEL_VERBOSE, false);
+        Integer ret = nui_instance.initialize(this, genInitParams(workspace), Constants.LogLevel.LOG_LEVEL_VERBOSE, false);
+        Log.i("zhouzihong",ret.toString());
         nui_instance.setParams(genParams());
     }
 
     @Override
     public void onNuiEventCallback(Constants.NuiEvent nuiEvent, int resultCode, int arg2, KwsResult kwsResult, AsrResult asrResult) {
+        Log.i("zhouzihong","1");
         if (nuiEvent == Constants.NuiEvent.EVENT_TRANSCRIBER_COMPLETE) {
             ui.setButtonState(ui.getStartButton(), true);
             ui.setButtonState(ui.getCancelButton(), false);
