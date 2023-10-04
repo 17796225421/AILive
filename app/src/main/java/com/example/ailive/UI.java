@@ -8,6 +8,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -20,7 +21,8 @@ public class UI extends Activity {
     // 你的UI组件和方法放这里，例如开始、停止按钮的监听器等
     private Button startButton;
     private Button cancelButton;
-    private TextView askView;
+    private Button submitButton;
+    private EditText askView;
     private TextView gptView;
     private Handler mHandler;
     private HandlerThread mHanderThread;
@@ -34,14 +36,16 @@ public class UI extends Activity {
 
         CommonUtils.copyAssetsData(this);
 
-        askView = (TextView) findViewById(R.id.askView);
+        askView = (EditText) findViewById(R.id.askView);
         gptView = (TextView) findViewById(R.id.GPTView);
 
         startButton = (Button) findViewById(R.id.button_start);
         cancelButton = (Button) findViewById(R.id.button_cancel);
+        submitButton = findViewById(R.id.submitButton);
 
         setButtonState(startButton, true);
         setButtonState(cancelButton, false);
+        setButtonState(submitButton, true);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -62,6 +66,15 @@ public class UI extends Activity {
                 setButtonState(cancelButton, false);
                 asr.stopDialog(mHandler);
                 asr.onStop();
+            }
+        });
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                asr.getGpt().onSentenceStop();
+                String inputText = askView.getText().toString();
+                asr.processInputText(inputText);
             }
         });
 
@@ -140,11 +153,12 @@ public class UI extends Activity {
     public void setCancelButton(Button cancelButton) {
         this.cancelButton = cancelButton;
     }
-    public TextView getAskView() {
+
+    public EditText getAskView() {
         return askView;
     }
 
-    public void setAskView(TextView askView) {
+    public void setAskView(EditText askView) {
         this.askView = askView;
     }
 

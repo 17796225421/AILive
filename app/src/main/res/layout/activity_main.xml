@@ -39,9 +39,19 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/button_start"
         android:layout_alignStart="@+id/button_start"
-        android:layout_marginTop="90dp"
-        android:background="@android:drawable/editbox_background"
+        android:layout_marginTop="40dp"
+        android:background="@android:color/white"
+        android:textColor="@android:color/black"
         android:hint="提问" />
+
+    <Button
+        android:id="@+id/submitButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/askView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="提交" />
 
     <TextView
         android:id="@+id/GPTView"

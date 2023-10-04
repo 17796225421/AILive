@@ -30,7 +30,7 @@ public class ASR implements INativeNuiCallback {
     // ASR 相关的方法和变量
     private static final String APPKEY = "8Xu8cELorObhV2cQ";
 
-    String token ;
+    String token;
     private static final String URL = "wss://nls-gateway.aliyuncs.com:443/ws/v1";
     private AudioRecord mAudioRecorder;
     private Context context;
@@ -125,7 +125,7 @@ public class ASR implements INativeNuiCallback {
                 String resultValue = payloadObject.getString("result");
 
                 // 检查结果长度
-                if(resultValue.length() < 5) {
+                if (resultValue.length() < 5) {
                     for (String stopCommand : STOP_COMMANDS) {
                         if (resultValue.contains(stopCommand)) {
                             gpt.onSentenceStop(); // 调用onStop方法
@@ -136,8 +136,7 @@ public class ASR implements INativeNuiCallback {
 
                 ui.showText(ui.getAskView(), "我：" + resultValue);
 
-                gpt.setAsrText(resultValue);
-                gpt.processAsrText();
+                processInputText(resultValue);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -146,6 +145,11 @@ public class ASR implements INativeNuiCallback {
         if (nuiEvent == Constants.NuiEvent.EVENT_ASR_ERROR) {
             return;
         }
+    }
+
+    public void processInputText(String text) {
+        gpt.setAsrText(text);
+        gpt.processAsrText();
     }
 
     @Override
@@ -180,7 +184,7 @@ public class ASR implements INativeNuiCallback {
         JSONObject object = new JSONObject();
         object.put("app_key", APPKEY);
         object.put("format", "MP3");
-        object.put("token", token );
+        object.put("token", token);
         object.put("device_id", Utils.getDeviceId());
         object.put("url", URL);
         object.put("workspace", workspace);
@@ -239,5 +243,7 @@ public class ASR implements INativeNuiCallback {
         nui_instance.stopDialog();
         gpt.onStop();
     }
-
+    public GPT getGpt() {
+        return gpt;
+    }
 }
