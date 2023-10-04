@@ -1,6 +1,7 @@
 package com.example.ailive;
 
 import android.app.Activity;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -27,6 +28,7 @@ public class UI extends Activity {
     private Handler mHandler;
     private HandlerThread mHanderThread;
     private ASR asr;
+    private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,7 +52,10 @@ public class UI extends Activity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (checkSelfPermission("android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED) {
+                    // 如果没有麦克风权限，请求权限
+                    requestPermissions(new String[]{"android.permission.RECORD_AUDIO"}, REQUEST_MICROPHONE_PERMISSION);
+                }
                 setButtonState(startButton, false);
                 setButtonState(cancelButton, true);
                 showText(askView, "");
