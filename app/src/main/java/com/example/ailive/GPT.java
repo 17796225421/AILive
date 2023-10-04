@@ -2,7 +2,8 @@ package com.example.ailive;
 
 
 import android.content.Context;
-import android.util.Log;
+
+import com.example.ailive.token.AccessToken;
 
 import org.json.JSONException;
 
@@ -19,6 +20,17 @@ public class GPT implements Runnable {
     StringBuilder segmentText;
     Context context;
     TTS tts;
+    private Thread gptThread;  // 添加这一行
+    private SegmentProcessingStatus segmentStatus = SegmentProcessingStatus.FIRST_40; // 初始化为首10个字的状态
+
+    private enum SegmentProcessingStatus {
+        FIRST_40,
+        FIRST_40_READY_TO_SPLIT, // 添加此标识
+        FIRST_50,
+        FIRST_50_READY_TO_SPLIT, // 添加此标识
+        DONE
+    }
+
     private final String FAST_GPT_API_ENDPOINT = "https://fastgpt.run/api/v1/chat/completions";
     private final String FAST_GPT_API_KEY = "fastgpt-4LYNv2qsOd19hJd34i83lkctaGfLcXdsI6VEr";
 
@@ -32,8 +44,9 @@ public class GPT implements Runnable {
     }
 
     public void processAsrText() {
-        Thread thread = new Thread(this);
-        thread.start();  // 开始线程
+        segmentStatus = SegmentProcessingStatus.FIRST_40;
+        gptThread = new Thread(this);  // 使用成员变量
+        gptThread.start();
     }
 
     @Override
@@ -61,7 +74,7 @@ public class GPT implements Runnable {
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 String line;
-                while ((line = br.readLine()) != null) {
+                while ((line = br.readLine()) != null && !Thread.currentThread().isInterrupted()) {
                     if (!line.startsWith("event: ")) continue;
 
                     String eventType = line.substring("event: ".length()).trim();
@@ -113,16 +126,60 @@ public class GPT implements Runnable {
         if (!choiceObject.has("delta") || !choiceObject.getJSONObject("delta").has("content")) {
             return;
         }
-
         String content = choiceObject.getJSONObject("delta").getString("content");
         accumulatedText.append(content);
         ui.showText(ui.getGptView(), "GPT：" + accumulatedText);
         segmentText.append(content);
-        if (segmentText.toString().contains("\n")) {
-            processSegmentText();
-            segmentText.setLength(0);
+        if (segmentStatus != SegmentProcessingStatus.DONE) {
+            handleFirstSegment(segmentText);
+        } else {
+            if (segmentText.toString().contains("\n")) {
+                processSegmentText();
+                segmentText.setLength(0);
+            }
         }
     }
+
+    private void handleFirstSegment(StringBuilder segmentText) {
+        if (segmentText.length() == 0) {
+            return;
+        }
+
+        char currentChar = segmentText.charAt(segmentText.length() - 1);
+        switch (segmentStatus) {
+            case FIRST_40:
+                if (segmentText.length() >= 20) {
+                    segmentStatus = SegmentProcessingStatus.FIRST_40_READY_TO_SPLIT;
+                }
+                break;
+            case FIRST_40_READY_TO_SPLIT:
+                if (isPauseCharacter(currentChar)) {
+                    processSegmentText();
+                    segmentText.setLength(0);
+                    segmentStatus = SegmentProcessingStatus.FIRST_50;
+                }
+                break;
+            case FIRST_50:
+                if (segmentText.length() >= 10) {
+                    segmentStatus = SegmentProcessingStatus.FIRST_50_READY_TO_SPLIT;
+                }
+                break;
+            case FIRST_50_READY_TO_SPLIT:
+                if (isPauseCharacter(currentChar)) {
+                    processSegmentText();
+                    segmentText.setLength(0);
+                    segmentStatus = SegmentProcessingStatus.DONE;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private boolean isPauseCharacter(char c) {
+        return c == '。' || c == ',' || c == '?' || c == '!' || c == ';' || c == '\n';
+    }
+
 
     private void processSegmentText() {
         tts.produce(segmentText.toString());
@@ -136,9 +193,31 @@ public class GPT implements Runnable {
         this.asrText = asrText;
     }
 
-    public void release(){
+    protected void onStart() {
         accumulatedText.setLength(0);
-        tts.release();
+    }
+
+    protected void onStop() {
+        segmentText.setLength(0);
+        segmentStatus = SegmentProcessingStatus.FIRST_40;
+        asrText = "";
+        if (gptThread != null && gptThread.isAlive()) {  // 检查线程是否还在运行
+            gptThread.interrupt();  // 尝试中断线程
+            gptThread = null;
+        }
+        tts.onStop();
+    }
+
+    protected void onSentenceStop() {
+        segmentText.setLength(0);
+        segmentStatus = SegmentProcessingStatus.FIRST_40;
+        asrText = "";
+        accumulatedText.setLength(0);
+        if (gptThread != null && gptThread.isAlive()) {  // 检查线程是否还在运行
+            gptThread.interrupt();  // 尝试中断线程
+            gptThread = null;
+        }
+        tts.onStop();
     }
 
 }

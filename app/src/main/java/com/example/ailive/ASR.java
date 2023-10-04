@@ -18,48 +18,98 @@ import com.alibaba.idst.nui.Constants;
 import com.alibaba.idst.nui.INativeNuiCallback;
 import com.alibaba.idst.nui.KwsResult;
 import com.alibaba.idst.nui.NativeNui;
+import com.example.ailive.token.AccessToken;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 
 public class ASR implements INativeNuiCallback {
     // ASR 相关的方法和变量
     private static final String APPKEY = "8Xu8cELorObhV2cQ";
-    private static final String TOKEN = "90294235bb7e455b8e6a5fb308b92aff";
-    private static final String URL = "wss://nls-gateway.cn-shanghai.aliyuncs.com:443/ws/v1";
+
+    String token ;
+    private static final String URL = "wss://nls-gateway.aliyuncs.com:443/ws/v1";
     private AudioRecord mAudioRecorder;
     private Context context;
     private UI ui;
     NativeNui nui_instance = new NativeNui();
     final static int WAVE_FRAM_SIZE = 20 * 2 * 1 * 16000 / 1000; //20ms audio for 16k/16bit/mono
     final static int SAMPLE_RATE = 16000;
+    AccessToken accessToken = AccessToken.getInstance();
     private GPT gpt;
 
     public ASR(Context context, UI ui) {
         this.context = context;
         this.ui = ui;
         gpt = new GPT(ui, context);
+        Thread th = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    accessToken.apply();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+        };
+        th.start();
+        try {
+            th.join(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        token = accessToken.getToken();
     }
+
+    private static final List<String> STOP_COMMANDS = Arrays.asList(
+            "勾勒",
+            "够了",
+            "狗了",
+            "勾了",
+            "狗乐",
+            "构乐",
+            "购乐",
+            "勾乐",
+            "狗拉",
+            "够拉",
+            "勾拉",
+            "过了",
+            "国乐",
+            "锅了",
+            "郭乐",
+            "果乐",
+            "国拉",
+            "过拉",
+            "郭拉",
+            "锅拉",
+            "高子",
+            "钩子"
+            // ... 其他可能的词
+    );
 
     @SuppressLint("MissingPermission")
     public void doInit() {
-
         mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, WAVE_FRAM_SIZE * 4);
+                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, WAVE_FRAM_SIZE * 4000);
 
         String workspace = CommonUtils.getModelPath(context);
 
-        Integer ret = nui_instance.initialize(this, genInitParams(workspace), Constants.LogLevel.LOG_LEVEL_VERBOSE, false);
-        Log.i("zhouzihong",ret.toString());
+        int ret = nui_instance.initialize(this, genInitParams(workspace), Constants.LogLevel.LOG_LEVEL_VERBOSE, false);
         nui_instance.setParams(genParams());
     }
 
     @Override
     public void onNuiEventCallback(Constants.NuiEvent nuiEvent, int resultCode, int arg2, KwsResult kwsResult, AsrResult asrResult) {
-        Log.i("zhouzihong","1");
         if (nuiEvent == Constants.NuiEvent.EVENT_TRANSCRIBER_COMPLETE) {
             ui.setButtonState(ui.getStartButton(), true);
             ui.setButtonState(ui.getCancelButton(), false);
+            return;
+        }
+        if (nuiEvent == Constants.NuiEvent.EVENT_SENTENCE_START) {
             return;
         }
         if (nuiEvent == Constants.NuiEvent.EVENT_SENTENCE_END) {
@@ -73,6 +123,17 @@ public class ASR implements INativeNuiCallback {
                     return;
                 }
                 String resultValue = payloadObject.getString("result");
+
+                // 检查结果长度
+                if(resultValue.length() < 5) {
+                    for (String stopCommand : STOP_COMMANDS) {
+                        if (resultValue.contains(stopCommand)) {
+                            gpt.onSentenceStop(); // 调用onStop方法
+                        }
+                    }
+                    return;  // 小于5个字，不进行任何处理，直接返回
+                }
+
                 ui.showText(ui.getAskView(), "我：" + resultValue);
 
                 gpt.setAsrText(resultValue);
@@ -118,7 +179,8 @@ public class ASR implements INativeNuiCallback {
     String genInitParams(String workspace) {
         JSONObject object = new JSONObject();
         object.put("app_key", APPKEY);
-        object.put("token", TOKEN);
+        object.put("format", "MP3");
+        object.put("token", token );
         object.put("device_id", Utils.getDeviceId());
         object.put("url", URL);
         object.put("workspace", workspace);
@@ -130,7 +192,9 @@ public class ASR implements INativeNuiCallback {
         // 接口说明可见https://help.aliyun.com/document_detail/173528.html
         JSONObject params = new JSONObject();
         JSONObject nls_config = new JSONObject();
-        nls_config.put("enable_intermediate_result", true);
+        nls_config.put("enable_intermediate_result", false);
+        nls_config.put("disfluency", true);
+        nls_config.put("speech_noise_threshold", 0.9);
         params.put("nls_config", nls_config);
         params.put("service_type", Constants.kServiceTypeSpeechTranscriber);
         return params.toString();
@@ -166,9 +230,14 @@ public class ASR implements INativeNuiCallback {
         });
     }
 
+    protected void onStart(Handler mHandler) {
+        startDialog(mHandler);
+        gpt.onStart();
+    }
+
     protected void onStop() {
-        nui_instance.release();
-        gpt.release();
+        nui_instance.stopDialog();
+        gpt.onStop();
     }
 
 }

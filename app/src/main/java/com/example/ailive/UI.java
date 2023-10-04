@@ -51,8 +51,7 @@ public class UI extends Activity {
                 setButtonState(cancelButton, true);
                 showText(askView, "");
                 showText(gptView, "");
-                asr.startDialog(mHandler);
-
+                asr.onStart(mHandler);
             }
         });
 
@@ -62,6 +61,7 @@ public class UI extends Activity {
                 setButtonState(startButton, true);
                 setButtonState(cancelButton, false);
                 asr.stopDialog(mHandler);
+                asr.onStop();
             }
         });
 
@@ -81,7 +81,6 @@ public class UI extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
-        asr.onStop();
     }
 
     @Override

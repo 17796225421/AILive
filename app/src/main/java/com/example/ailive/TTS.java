@@ -17,12 +17,14 @@ import java.util.concurrent.LinkedBlockingQueue;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 
+import com.example.ailive.token.AccessToken;
+
 public class TTS {
     private Thread consumerThread;
     private final BlockingQueue<String> queue = new LinkedBlockingQueue<>();
     private final OkHttpClient client = new OkHttpClient();
     private String APPKEY = "8Xu8cELorObhV2cQ";  // 请替换为您的appkey
-    private String TOKEN = "90294235bb7e455b8e6a5fb308b92aff";  // 请替换为您的token
+    AccessToken accessToken = AccessToken.getInstance();
     private Context context;
     private MediaPlayer mediaPlayer;
     private final BlockingQueue<File> audioQueue = new LinkedBlockingQueue<>();
@@ -77,7 +79,7 @@ public class TTS {
 
     private File saveResponseToFile(Response response) {
         long timestamp = System.currentTimeMillis();
-        File audioSaveFile = new File(context.getCacheDir(), "audio_" + timestamp + ".wav");
+        File audioSaveFile = new File(context.getCacheDir(), "audio_" + timestamp + ".mp3");
 
         try {
             byte[] bytes = response.body().bytes(); // 直接读取响应体的所有字节
@@ -94,9 +96,9 @@ public class TTS {
     private String buildRequestUrl(String text) {
         String url = "https://nls-gateway-cn-shanghai.aliyuncs.com/stream/v1/tts";
         url += "?appkey=" + APPKEY;
-        url += "&token=" + TOKEN;
+        url += "&token=" + accessToken.getToken();
         url += "&text=" + text;
-        url += "&format=wav";
+        url += "&format=mp3";
         url += "&voice=aixia";
         url += "&sample_rate=16000";
         return url;
@@ -128,9 +130,22 @@ public class TTS {
         }
     }
 
-    public void release() {
+    public void onStop() {
+        // 停止并释放MediaPlayer
+        if (mediaPlayer != null) {
+            if (mediaPlayer.isPlaying()) {
+                mediaPlayer.stop();
+            }
+            mediaPlayer.release();
+            mediaPlayer = null;
+        }
+
+        // 清空队列
+        queue.clear();
+        audioQueue.clear();
 
     }
+
 
 
     private void playAudio(File audioFile) {
