@@ -116,16 +116,7 @@ public class LAppDefine {
         /**
          * Background image file
          */
-        BACK_IMAGE("back_class_normal.png"),
-        /**
-         * Gear image file
-         */
-        GEAR_IMAGE("icon_gear.png"),
-        /**
-         * Power button image file
-         */
-        POWER_IMAGE("close.png");
-
+        BACK_IMAGE("back_class_normal.png");
         private final String path;
 
         ResourcePath(String path) {

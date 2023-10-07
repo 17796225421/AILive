@@ -43,8 +43,6 @@ public class UI extends Activity {
         setContentView(R.layout.activity_main);
 
         live2DView = findViewById(R.id.live2dView);
-        live2DView.setZOrderOnTop(true);
-        live2DView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         live2DView.setEGLContextClientVersion(2);
         live2DView.setRenderer(new GLRenderer());
         live2DView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -62,9 +60,8 @@ public class UI extends Activity {
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
 
-        backgroundImage = findViewById(R.id.background_image);
         changeBgBtn = findViewById(R.id.change_bg_btn);
-        sd = new SD(this,backgroundImage);
+        sd = new SD(this);
         sd.setupAutoImageSwitching();
 
         startButton.setOnClickListener(new View.OnClickListener() {
