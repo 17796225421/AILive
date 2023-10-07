@@ -102,11 +102,6 @@ public class LAppView {
         fWidth = (float) gearTexture.width;
         fHeight = (float) gearTexture.height;
 
-        if (gearSprite == null) {
-            gearSprite = new LAppSprite(x, y, fWidth, fHeight, gearTexture.id, programId);
-        } else {
-            gearSprite.resize(x, y, fWidth, fHeight);
-        }
 
         // 電源画像の読み込み
         LAppTextureManager.TextureInfo powerTexture = textureManager.createTextureFromPngFile(ResourcePath.ROOT.getPath() + ResourcePath.POWER_IMAGE.getPath());
@@ -137,13 +132,7 @@ public class LAppView {
     // 描画する
     public void render() {
         // UIと背景の描画
-        gearSprite.render();
         powerSprite.render();
-
-        if (isChangedModel) {
-            isChangedModel = false;
-            LAppLive2DManager.getInstance().nextScene();
-        }
 
         // モデルの描画
         LAppLive2DManager live2dManager = LAppLive2DManager.getInstance();
@@ -291,11 +280,6 @@ public class LAppView {
 
         live2DManager.onTap(x, y);
 
-        // 歯車ボタンにタップしたか
-        if (gearSprite.isHit(pointX, pointY)) {
-            isChangedModel = true;
-        }
-
         // 電源ボタンにタップしたか
         if (powerSprite.isHit(pointX, pointY)) {
             // アプリを終了する
@@ -409,15 +393,12 @@ public class LAppView {
 
     private CubismOffscreenSurfaceAndroid renderingBuffer = new CubismOffscreenSurfaceAndroid();
 
-    private LAppSprite backSprite;
-    private LAppSprite gearSprite;
     private LAppSprite powerSprite;
     private LAppSprite renderingSprite;
 
     /**
      * モデルの切り替えフラグ
      */
-    private boolean isChangedModel;
 
     private final TouchManager touchManager = new TouchManager();
 }
