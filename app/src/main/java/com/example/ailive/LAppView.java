@@ -229,17 +229,21 @@ public class LAppView {
     }
 
     /**
-     * タッチしているときにポインターが動いたら呼ばれる
+     * 当触摸点在屏幕上移动时调用此方法
      *
-     * @param pointX スクリーンX座標
-     * @param pointY スクリーンY座標
+     * @param pointX 屏幕上的X坐标
+     * @param pointY 屏幕上的Y坐标
      */
     public void onTouchesMoved(float pointX, float pointY) {
+        // 获取上一个触摸点的转换后的X坐标
         float viewX = transformViewX(touchManager.getLastX());
+        // 获取上一个触摸点的转换后的Y坐标
         float viewY = transformViewY(touchManager.getLastY());
 
+        // 更新触摸管理器中的触摸点位置
         touchManager.touchesMoved(pointX, pointY);
 
+        // 通知Live2D管理器进行拖拽操作
         LAppLive2DManager.getInstance().onDrag(viewX, viewY);
     }
 
@@ -269,49 +273,49 @@ public class LAppView {
     }
 
     /**
-     * X座標をView座標に変換する
+     * 将X坐标转换为View坐标
      *
-     * @param deviceX デバイスX座標
-     * @return ViewX座標
+     * @param deviceX 设备的X坐标
+     * @return View的X坐标
      */
     public float transformViewX(float deviceX) {
-        // 論理座標変換した座標を取得
+        // 获取逻辑坐标转换后的坐标
         float screenX = deviceToScreen.transformX(deviceX);
-        // 拡大、縮小、移動後の値
+        // 获取经过缩放、移动之后的值
         return viewMatrix.invertTransformX(screenX);
     }
 
     /**
-     * Y座標をView座標に変換する
+     * 将Y坐标转换为View坐标
      *
-     * @param deviceY デバイスY座標
-     * @return ViewY座標
+     * @param deviceY 设备的Y坐标
+     * @return View的Y坐标
      */
     public float transformViewY(float deviceY) {
-        // 論理座標変換した座標を取得
+        // 获取逻辑坐标转换后的坐标
         float screenY = deviceToScreen.transformY(deviceY);
-        // 拡大、縮小、移動後の値
+        // 获取经过缩放、移动之后的值
         return viewMatrix.invertTransformX(screenY);
     }
 
     /**
-     * X座標をScreen座標に変換する
+     * 将X坐标转换为屏幕坐标
      *
-     * @param deviceX デバイスX座標
-     * @return ScreenX座標
+     * @param deviceX 设备的X坐标
+     * @return 屏幕的X坐标
      */
     public float transformScreenX(float deviceX) {
         return deviceToScreen.transformX(deviceX);
     }
 
     /**
-     * Y座標をScreen座標に変換する
+     * 将Y坐标转换为屏幕坐标
      *
-     * @param deviceY デバイスY座標
-     * @return ScreenY座標
+     * @param deviceY 设备的Y坐标
+     * @return 屏幕的Y坐标
      */
     public float transformScreenY(float deviceY) {
-        return deviceToScreen.transformX(deviceY);
+        return deviceToScreen.transformY(deviceY);
     }
 
     /**
@@ -356,8 +360,8 @@ public class LAppView {
         return renderingTarget;
     }
 
-    private final CubismMatrix44 deviceToScreen = CubismMatrix44.create(); // デバイス座標からスクリーン座標に変換するための行列
-    private final CubismViewMatrix viewMatrix = new CubismViewMatrix();   // 画面表示の拡縮や移動の変換を行う行列
+    private final CubismMatrix44 deviceToScreen = CubismMatrix44.create(); // 将设备坐标转换为屏幕坐标的矩阵
+    private final CubismViewMatrix viewMatrix = new CubismViewMatrix();   // 用于执行屏幕显示的缩放和移动转换的矩阵
     private int programId;
     private int windowWidth;
     private int windowHeight;

@@ -197,11 +197,10 @@ public class CubismModel {
 
         return canvasInfo.getPixelsPerUnit();
     }
-
     /**
-     * Get the canvas width.
+     * 获取画布宽度。
      *
-     * @return canvas width
+     * @return 画布宽度
      */
     public float getCanvasWidth() {
         if (model == null) {
@@ -214,9 +213,9 @@ public class CubismModel {
     }
 
     /**
-     * Get the canvas height.
+     * 获取画布高度。
      *
-     * @return canvas height
+     * @return 画布高度
      */
     public float getCanvasHeight() {
         if (model == null) {
@@ -1526,32 +1525,35 @@ public class CubismModel {
             }
         }
     }
-
     /**
-     * List of opacities for non-existent parts
+     * 不存在部分的不透明度列表
      */
     private float[] notExistPartOpacities = new float[1];
     private final List<Integer> notExistPartIndices = new ArrayList<Integer>();
 
     /**
-     * List of IDs for non-existent parts
+     * 不存在部分的ID列表
      */
     private final Map<CubismId, Integer> notExistPartIds = new HashMap<CubismId, Integer>();
+
     /**
-     * List of values for non-existent parameters
+     * 不存在参数的值列表
      */
     private float[] notExistParameterValues = new float[1];
     private final List<Integer> notExistParameterIndices = new ArrayList<Integer>();
+
     /**
-     * List of IDs for non-existent parameters
+     * 不存在参数的ID列表
      */
     private final Map<CubismId, Integer> notExistParameterIds = new HashMap<CubismId, Integer>();
+
     /**
-     * Saved parameters
+     * 保存的参数
      */
     private float[] savedParameters = new float[1];
+
     /**
-     * model
+     * 模型
      */
     private final com.live2d.sdk.cubism.core.CubismModel model;
 
@@ -1559,7 +1561,7 @@ public class CubismModel {
     private CubismPartView[] partValues;
 
     /**
-     * モデルの不透明度
+     * 模型的不透明度
      */
     private float modelOpacity = 1.0f;
 
@@ -1568,41 +1570,48 @@ public class CubismModel {
     private List<CubismId> drawableIds = new ArrayList<CubismId>();
 
     /**
-     * Drawableの乗算色のリスト
+     * Drawable的乘法颜色列表
      */
     private final List<DrawableColorData> userDrawableMultiplyColors = new ArrayList<DrawableColorData>();
+
     /**
-     * Drawableのスクリーン色のリスト
+     * Drawable的屏幕颜色列表
      */
     private final List<DrawableColorData> userDrawableScreenColors = new ArrayList<DrawableColorData>();
 
     /**
-     * パーツの乗算色のリスト
+     * 部分的乘法颜色列表
      */
     private final List<PartColorData> userPartMultiplyColors = new ArrayList<PartColorData>();
+
     /**
-     * パーツのスクリーン色のリスト
+     * 部分的屏幕颜色列表
      */
     private final List<PartColorData> userPartScreenColors = new ArrayList<PartColorData>();
+
     /**
-     * Partとその子DrawableのListとのMap
+     * 部分和其子Drawable的列表的映射
      */
     private Map<Integer,List<Integer>> partChildDrawablesMap;
 
     /**
-     * カリング設定のリスト
+     * 剔除设置列表
      */
     private final List<DrawableCullingData> userCullings = new ArrayList<DrawableCullingData>();
+
     /**
-     * Flag whether to overwrite all the multiply colors
+     * 是否覆盖所有的乘法颜色的标志
      */
     private boolean isOverwrittenModelMultiplyColors;
+
     /**
-     * Flag whether to overwrite all the screen colors
+     * 是否覆盖所有的屏幕颜色的标志
      */
     private boolean isOverwrittenModelScreenColors;
+
     /**
-     * モデルのカリング設定をすべて上書きするか？
+     * 是否覆盖模型的所有剔除设置？
      */
     private boolean isOverwrittenCullings;
 }
+

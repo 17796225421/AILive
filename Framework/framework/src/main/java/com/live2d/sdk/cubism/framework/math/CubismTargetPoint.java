@@ -12,18 +12,18 @@ package com.live2d.sdk.cubism.framework.math;
  */
 public class CubismTargetPoint {
     /**
-     * Update face orientation control.
+     * 更新面部方向控制。
      *
-     * @param deltaTimeSeconds delta time[s]
+     * @param deltaTimeSeconds 间隔时间[秒]
      */
     public void update(float deltaTimeSeconds) {
-        // Add delta time
+        // 加上间隔时间
         userTimeSeconds += deltaTimeSeconds;
 
-        // Set the maximum speed considering the average speed when swinging the head from the center to the left or right.
-        // The swing of the face is set from the center (0.0) to the left and right (+-1.0).
+        // 考虑到从中心摇摆到左右时的平均速度，设置最大速度。
+        // 面部的摇摆从中心（0.0）设置到左右（+-1.0）。
         final float faceParamMaxV = 40.0f / 10.0f;
-        // Upper limit of the speed that can be changed per frame.
+        // 每帧可改变的速度的上限。
         final float maxV = faceParamMaxV / FRAME_RATE;
 
         if (lastTimeSeconds == 0.0f) {
@@ -34,59 +34,51 @@ public class CubismTargetPoint {
         final float deltaTimeWeight = (userTimeSeconds - lastTimeSeconds) * FRAME_RATE;
         lastTimeSeconds = userTimeSeconds;
 
-        // Calculate the time it takes to reach the maximum speed.
+        // 计算达到最大速度所需的时间。
         final float timeToMaxSpeed = 0.15f;
-        final float frameToMaxSpeed = timeToMaxSpeed * FRAME_RATE; // sec * frame/sec
+        final float frameToMaxSpeed = timeToMaxSpeed * FRAME_RATE; // 秒 * 帧/秒
         final float maxA = deltaTimeWeight * maxV / frameToMaxSpeed;
 
         final float dx = faceTargetX - faceX;
         final float dy = faceTargetY - faceY;
 
-        // In the case of there is no change.
+        // 如果没有变化。
         if (CubismMath.absF(dx) <= EPSILON && CubismMath.absF(dy) <= EPSILON) {
             return;
         }
 
-        // If the speed is greater than the maximum speed, reduce the speed.
+        // 如果速度大于最大速度，则降低速度。
         final float d = CubismMath.sqrtF((dx * dx) + (dy * dy));
 
-        // Maximum velocity vector in the direction of travel.
+        // 行驶方向的最大速度矢量。
         final float vx = maxV * dx / d;
         final float vy = maxV * dy / d;
 
-        // Calculate the change (acceleration) from the current speed to the new speed.
+        // 从当前速度计算到新速度的变化（加速度）。
         float ax = vx - faceVX;
         float ay = vy - faceVY;
 
         float a = CubismMath.sqrtF((ax * ax) + (ay * ay));
 
-        // At acceleration.
+        // 加速度处理。
         if (a < -maxA || a > maxA) {
             ax *= maxA / a;
             ay *= maxA / a;
         }
 
-        // Add the acceleration to the original speed to obtain the new speed.
+        // 将加速度添加到原始速度以获得新速度。
         faceVX += ax;
         faceVY += ay;
 
-
-        // Processing for smooth deceleration when approaching the desired direction
-        // Calculate the maximum speed currently available based on the relationship between distance and speed at which an object can stop at a set acceleration, and slow down if the speed is greater than that.
-        // Humans are inherently more flexible because they can adjust force (acceleration) with muscle power, but this is a simple process.
+        // 当接近所需方向时，为了平滑减速的处理
+        // 根据一个物体在设定的加速度下停止的距离和速度之间的关系，计算当前可用的最大速度，并在速度大于该值时减速。
+        // 人类本质上更灵活，因为他们可以用肌肉力量调整力量（加速度），但这是一个简单的过程。
         {
-            // Relational expression between acceleration, velocity, and distance.
-            //            2  6           2               3
-            //      sqrt(a  t  + 16 a h t  - 8 a h) - a t
-            // v = --------------------------------------
-            //                    2
-            //                 4 t  - 2
-            // (t=1)
-            // Time t is calculated in advance as 1/60 (frame rate, no units) for acceleration and velocity. Therefore, it can be erased as t = 1 (unverified)
+            // 加速度、速度和距离之间的关系表达式。
             final float maxV2 = 0.5f * (CubismMath.sqrtF((maxA * maxA) + 16.0f * maxA * d - 8.0f * maxA * d) - maxA);
             final float curV = CubismMath.sqrtF((faceVX * faceVX) + (faceVY * faceVY));
 
-            // Decelerate to maximum speed when current speed > maximum speed.
+            // 当前速度 > 最大速度时，减速到最大速度。
             if (curV > maxV2) {
                 faceVX *= maxV2 / curV;
                 faceVY *= maxV2 / curV;
@@ -116,16 +108,17 @@ public class CubismTargetPoint {
     }
 
     /**
-     * Set a target value for face orientation.
+     * 设置面部方向的目标值。
      *
-     * @param x X-axis face orientation value (-1.0 - 1.0)
-     * @param y Y-axis face orientation value (-1.0 - 1.0)
+     * @param x X轴面部方向值（-1.0 - 1.0）
+     * @param y Y轴面部方向值（-1.0 - 1.0）
      */
     public void set(float x, float y) {
+        // 设置X轴面部方向的目标值
         faceTargetX = x;
+        // 设置Y轴面部方向的目标值
         faceTargetY = y;
     }
-
     /**
      * Framerate per seconds[s]
      */

@@ -101,34 +101,34 @@ public abstract class CubismUserModel {
 
         return (left <= tx) && (tx <= right) && (top <= ty) && (ty <= bottom);
     }
-
     /**
-     * 生成されたレンダラーを受け取って初期化する。<br>
-     * このメソッドを使用した場合、クリッピングマスクの描画に使われるバッファのデフォルト枚数は1枚となる。
+     * 接收生成的渲染器并进行初始化。<br>
+     * 使用此方法时，用于绘制剪切遮罩的缓冲区的默认数量为1。
      *
-     * @note 引数にnullが与えられた場合`NullPointerException`が投げられる。
+     * @note 如果给定的参数是null，则会抛出`NullPointerException`。
      *
-     * @param renderer CubismRendererを継承したレンダラークラスのインスタンス
+     * @param renderer 继承自CubismRenderer的渲染器类的实例
      */
     public void setupRenderer(CubismRenderer renderer) {
         setupRenderer(renderer,1);
     }
 
     /**
-     * 生成されたレンダラーを受け取って初期化する。<br>
-     * クリッピングマスクの描画に使うバッファの枚数をデフォルトの1枚より増やしたい場合は、このメソッドを使用する。
+     * 接收生成的渲染器并进行初始化。<br>
+     * 如果你想增加用于绘制剪切遮罩的缓冲区的数量超过默认的1张，可以使用此方法。
      *
-     * @note 第1引数にnullが与えられた場合`NullPointerException`が投げられる。
+     * @note 如果第1个参数是null，则会抛出`NullPointerException`。
      *
-     * @param renderer CubismRendererを継承したレンダラークラスのインスタンス
-     * @param maskBufferCount 生成したいマスクバッファの枚数
+     * @param renderer 继承自CubismRenderer的渲染器类的实例
+     * @param maskBufferCount 想要生成的遮罩缓冲区的数量
      */
     public void setupRenderer(CubismRenderer renderer, int maskBufferCount) {
         this.renderer = renderer;
 
-        // Bind a renderer with a model instance
+        // 将渲染器与模型实例绑定
         this.renderer.initialize(model, maskBufferCount);
     }
+
 
     /**
      * Do a standard process at firing the event.
@@ -180,15 +180,15 @@ public abstract class CubismUserModel {
     }
 
     /**
-     * Set an information of mouse dragging.
+     * 设置鼠标拖动的信息。
      *
-     * @param x X-position of the cursor being dragging
-     * @param y Y-position of the cursor being dragging
+     * @param x 正在拖动的光标的X位置
+     * @param y 正在拖动的光标的Y位置
      */
     public void setDragging(float x, float y) {
+        // 设置拖动管理器中的x和y坐标
         dragManager.set(x, y);
     }
-
     /**
      * Set an acceleration information.
      *
@@ -294,7 +294,7 @@ public abstract class CubismUserModel {
         this.model = model;
 
         this.model.saveParameters();
-        modelMatrix = CubismModelMatrix.create(this.model.getCanvasWidth(), this.model.getCanvasHeight());
+        modelMatrix = CubismModelMatrix.create(2.67f,  2.78f);
     }
 
     /**
@@ -375,112 +375,130 @@ public abstract class CubismUserModel {
     protected void loadUserData(final byte[] buffer) {
         modelUserData = CubismModelUserData.create(buffer);
     }
-
     /**
-     * A Moc data,
+     * Moc 数据
      */
     protected CubismMoc moc;
+
     /**
-     * A model instance
+     * 模型实例
      */
     protected CubismModel model;
 
     /**
-     * A motion manager
+     * 动作管理器
      */
     protected CubismMotionManager motionManager = new CubismMotionManager();
+
     /**
-     * A expression manager
+     * 表情管理器
      */
     protected CubismMotionManager expressionManager = new CubismMotionManager();
+
     /**
-     * Auto eye-blink
+     * 自动眨眼
      */
     protected CubismEyeBlink eyeBlink;
+
     /**
-     * Breathing
+     * 呼吸
      */
     protected CubismBreath breath;
+
     /**
-     * A model matrix
+     * 模型矩阵
      */
     protected CubismModelMatrix modelMatrix;
+
     /**
-     * m
-     * Pose manager
+     * 姿态管理器
      */
     protected CubismPose pose;
+
     /**
-     * A mouse dragging manager
+     * 鼠标拖动管理器
      */
     protected CubismTargetPoint dragManager = new CubismTargetPoint();
+
     /**
-     * physics
+     * 物理
      */
     protected CubismPhysics physics;
+
     /**
-     * A user data
+     * 用户数据
      */
     protected CubismModelUserData modelUserData;
 
     /**
-     * An initializing status
+     * 初始化状态
      */
     protected boolean isInitialized;
+
     /**
-     * An updating status
+     * 更新状态
      */
     protected boolean isUpdated;
+
     /**
-     * Opacity
+     * 透明度
      */
     protected float opacity = 1.0f;
+
     /**
-     * A lip-sync status
+     * 唇同步状态
      */
     protected boolean lipSync = true;
+
     /**
-     * A control value of the last lip-sync
+     * 上次唇同步的控制值
      */
     protected float lastLipSyncValue;
+
     /**
-     * An X-position of mouse dragging
+     * 鼠标拖动的X位置
      */
     protected float dragX;
+
     /**
-     * An Y-position of mouse dragging
+     * 鼠标拖动的Y位置
      */
     protected float dragY;
+
     /**
-     * An acceleration in X-axis direction
+     * X轴方向上的加速度
      */
     protected float accelerationX;
+
     /**
-     * An acceleration in Y-axis direction
+     * Y轴方向上的加速度
      */
     protected float accelerationY;
+
     /**
-     * An acceleration in Z-axis direction
+     * Z轴方向上的加速度
      */
     protected float accelerationZ;
+
     /**
-     * MOC3の整合性を検証するか。検証するならtrue。
+     * 是否验证MOC3的一致性。如果进行验证，则为true。
      */
     protected boolean mocConsistency;
+
     /**
-     * Whether it is debug mode
+     * 是否为调试模式
      */
     protected boolean debugMode;
 
     /**
-     * An entity of CubismMotionEventFunction.
+     * CubismMotionEventFunction的实体。
      */
     private static final ICubismMotionEventFunction cubismDefaultMotionEventCallback = new ICubismMotionEventFunction() {
         @Override
         public void apply(
-            CubismMotionQueueManager caller,
-            String eventValue,
-            Object customData
+                CubismMotionQueueManager caller,
+                String eventValue,
+                Object customData
         ) {
             if (customData != null) {
                 ((CubismUserModel) customData).motionEventFired(eventValue);
@@ -489,7 +507,7 @@ public abstract class CubismUserModel {
     };
 
     /**
-     * A renderer
+     * 渲染器
      */
     private CubismRenderer renderer;
 }

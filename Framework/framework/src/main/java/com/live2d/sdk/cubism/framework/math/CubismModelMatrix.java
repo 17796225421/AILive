@@ -14,17 +14,17 @@ import java.util.Map;
  */
 public class CubismModelMatrix extends CubismMatrix44 {
     /**
-     * Create the new CubismModelMatrix instance with the width and height passed as arguments.
+     * 使用传入的宽度和高度创建一个新的CubismModelMatrix实例。
      *
-     * @param w width
-     * @param h height
-     * @return CubismModelMatrix instance with the width and height
+     * @param w 宽度
+     * @param h 高度
+     * @return 带有指定宽度和高度的CubismModelMatrix实例
      *
-     * @throws IllegalArgumentException if arguments equals 0 or are less than 0
+     * @throws IllegalArgumentException 如果参数等于0或小于0
      */
     public static CubismModelMatrix create(float w, float h) {
         if (w <= 0 || h <= 0) {
-            throw new IllegalArgumentException("width or height equals 0 or is less than 0.");
+            throw new IllegalArgumentException("宽度或高度等于0或小于0。");
         }
         return new CubismModelMatrix(w, h);
     }

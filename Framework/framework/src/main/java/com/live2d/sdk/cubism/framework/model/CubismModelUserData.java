@@ -43,15 +43,17 @@ public class CubismModelUserData {
         }
 
         /**
-         * User data target type
+         * 用户数据的目标类型
          */
         public final CubismId targetType;
+
         /**
-         * User data target ID
+         * 用户数据的目标ID
          */
         public final CubismId targetId;
+
         /**
-         * User data
+         * 用户数据
          */
         public final String value;
     }
@@ -133,11 +135,12 @@ public class CubismModelUserData {
     }
 
     /**
-     * the list which has a user data struct class
+     * 拥有用户数据结构类的列表
      */
     private final List<CubismModelUserDataNode> userDataNodes = new ArrayList<CubismModelUserDataNode>();
+
     /**
-     * 閲覧リスト保持
+     * 保存艺术网格用户数据节点的列表
      */
     private final List<CubismModelUserDataNode> artMeshUserDataNodes = new ArrayList<CubismModelUserDataNode>();
 

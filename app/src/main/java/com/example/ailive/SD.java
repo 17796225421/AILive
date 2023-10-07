@@ -179,7 +179,6 @@ public class SD {
     }
 
     private void randomSwitchImage() {
-        Log.i("zhouzihong", "2");
 
         File directory = context.getExternalFilesDir(null);
         if (directory == null || !directory.exists()) {
