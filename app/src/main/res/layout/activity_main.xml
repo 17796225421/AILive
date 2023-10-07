@@ -40,9 +40,8 @@
         android:layout_below="@+id/button_start"
         android:layout_alignStart="@+id/button_start"
         android:layout_marginTop="40dp"
-        android:background="@android:color/white"
-        android:textColor="@android:color/black"
-        android:hint="提问" />
+        android:hint="提问"
+        android:textColor="@android:color/white" />
 
     <Button
         android:id="@+id/submitButton"
@@ -55,30 +54,19 @@
 
     <TextView
         android:id="@+id/GPTView"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/askView"
-        android:layout_alignStart="@+id/button_start"
-        android:layout_marginTop="90dp"
-        android:text="GPT" />
+        android:layout_below="@+id/submitButton"
+        android:layout_marginTop="20dp"
+        android:text="GPT"
+        android:textColor="@android:color/white" />
 
-    <!--    <ScrollView-->
-    <!--        android:layout_width="match_parent"-->
-    <!--        android:layout_height="wrap_content"-->
-    <!--        android:layout_below="@id/button_start"-->
-    <!--        android:layout_marginTop="100dp"-->
-    <!--        <LinearLayout-->
-    <!--            android:layout_width="match_parent"-->
-    <!--            android:layout_height="match_parent"-->
-    <!--            android:orientation="vertical">-->
+    <android.opengl.GLSurfaceView
+        android:id="@+id/live2dView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/GPTView"
+        android:layout_alignParentBottom="true" />
 
-    <!--            <TextView-->
-    <!--                android:layout_marginTop="192dp"-->
-    <!--                android:id="@+id/textView"-->
-    <!--                android:layout_width="match_parent"-->
-    <!--                android:layout_height="wrap_content"-->
-    <!--                android:text="识别文本" />-->
-    <!--        </LinearLayout>-->
-    <!--    </ScrollView>-->
 
 </RelativeLayout>

@@ -2,19 +2,30 @@ package com.example.ailive;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
+import android.opengl.GLES20;
+import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowInsets;
+import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import com.alibaba.idst.nui.CommonUtils;
+
+import javax.microedition.khronos.egl.EGLConfig;
+import javax.microedition.khronos.opengles.GL10;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -25,6 +36,7 @@ public class UI extends Activity {
     private Button submitButton;
     private EditText askView;
     private TextView gptView;
+    private GLSurfaceView live2DView;
     private Handler mHandler;
     private HandlerThread mHanderThread;
     private ASR asr;
@@ -33,8 +45,12 @@ public class UI extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
+
+        live2DView = findViewById(R.id.live2dView);
+        live2DView.setEGLContextClientVersion(2);
+        live2DView.setRenderer(new GLRenderer());
+        live2DView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         CommonUtils.copyAssetsData(this);
 
@@ -48,6 +64,7 @@ public class UI extends Activity {
         setButtonState(startButton, true);
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
+
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -94,17 +111,13 @@ public class UI extends Activity {
     protected void onStart() {
         super.onStart();
         doInit();
+        LAppDelegate.getInstance().onStart(this);
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-    }
-
-    @Override
-    protected void onDestroy() {
-
-        super.onDestroy();
+        LAppDelegate.getInstance().onStop();
     }
 
     private void doInit() {
@@ -175,5 +188,55 @@ public class UI extends Activity {
         this.gptView = gptView;
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
 
+        live2DView.onResume();
+
+        View decor = this.getWindow().getDecorView();
+        decor.setSystemUiVisibility(
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_FULLSCREEN
+                        | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+        );
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        live2DView.onPause();
+        LAppDelegate.getInstance().onPause();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        LAppDelegate.getInstance().onDestroy();
+
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        float pointX = event.getX();
+        float pointY = event.getY();
+
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                LAppDelegate.getInstance().onTouchBegan(pointX, pointY);
+                break;
+            case MotionEvent.ACTION_UP:
+                LAppDelegate.getInstance().onTouchEnd(pointX, pointY);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                LAppDelegate.getInstance().onTouchMoved(pointX, pointY);
+                break;
+        }
+        return super.onTouchEvent(event);
+    }
 }
