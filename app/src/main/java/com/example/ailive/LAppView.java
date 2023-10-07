@@ -112,12 +112,6 @@ public class LAppView {
         fWidth = (float) powerTexture.width;
         fHeight = (float) powerTexture.height;
 
-        if (powerSprite == null) {
-            powerSprite = new LAppSprite(x, y, fWidth, fHeight, powerTexture.id, programId);
-        } else {
-            powerSprite.resize(x, y, fWidth, fHeight);
-        }
-
         // 画面全体を覆うサイズ
         x = windowWidth * 0.5f;
         y = windowHeight * 0.5f;
@@ -131,8 +125,6 @@ public class LAppView {
 
     // 描画する
     public void render() {
-        // UIと背景の描画
-        powerSprite.render();
 
         // モデルの描画
         LAppLive2DManager live2dManager = LAppLive2DManager.getInstance();
@@ -280,12 +272,6 @@ public class LAppView {
 
         live2DManager.onTap(x, y);
 
-        // 電源ボタンにタップしたか
-        if (powerSprite.isHit(pointX, pointY)) {
-            // アプリを終了する
-            LAppDelegate.getInstance().deactivateApp();
-        }
-
     }
 
     /**
@@ -393,7 +379,6 @@ public class LAppView {
 
     private CubismOffscreenSurfaceAndroid renderingBuffer = new CubismOffscreenSurfaceAndroid();
 
-    private LAppSprite powerSprite;
     private LAppSprite renderingSprite;
 
     /**
