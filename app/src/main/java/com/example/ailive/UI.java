@@ -2,30 +2,22 @@ package com.example.ailive;
 
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.opengl.GLES20;
+import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import com.alibaba.idst.nui.CommonUtils;
-
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.opengles.GL10;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -34,12 +26,15 @@ public class UI extends Activity {
     private Button startButton;
     private Button cancelButton;
     private Button submitButton;
+    private ImageView backgroundImage;
+    private Button changeBgBtn;
     private EditText askView;
     private TextView gptView;
     private GLSurfaceView live2DView;
     private Handler mHandler;
     private HandlerThread mHanderThread;
     private ASR asr;
+    private SD sd;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
     @Override
@@ -48,6 +43,8 @@ public class UI extends Activity {
         setContentView(R.layout.activity_main);
 
         live2DView = findViewById(R.id.live2dView);
+        live2DView.setZOrderOnTop(true);
+        live2DView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         live2DView.setEGLContextClientVersion(2);
         live2DView.setRenderer(new GLRenderer());
         live2DView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -65,6 +62,10 @@ public class UI extends Activity {
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
 
+        backgroundImage = findViewById(R.id.background_image);
+        changeBgBtn = findViewById(R.id.change_bg_btn);
+        sd = new SD(this,backgroundImage);
+        sd.setupAutoImageSwitching();
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -97,6 +98,13 @@ public class UI extends Activity {
                 asr.getGpt().onSentenceStop();
                 String inputText = askView.getText().toString();
                 asr.processInputText(inputText);
+            }
+        });
+
+        changeBgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                sd.fetchAndSetNewBackgroundImage();
             }
         });
 
@@ -239,4 +247,5 @@ public class UI extends Activity {
         }
         return super.onTouchEvent(event);
     }
+
 }
