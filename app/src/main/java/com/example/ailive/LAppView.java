@@ -34,25 +34,30 @@ public class LAppView {
     public void initializeShader() {
         programId = LAppDelegate.getInstance().createShader();
     }
-
-    // ビューを初期化する
+    // 初始化视图
     public void initialize() {
+        // 获取窗口的宽和高
         int width = LAppDelegate.getInstance().getWindowWidth();
         int height = LAppDelegate.getInstance().getWindowHeight();
 
+        // 根据宽和高计算宽高比
         float ratio = (float) width / (float) height;
+        // 根据宽高比设定左右边界
         float left = -ratio;
         float right = ratio;
+        // 设定上下边界
         float bottom = LogicalView.LEFT.getValue();
         float top = LogicalView.RIGHT.getValue();
 
-        // デバイスに対応する画面範囲。Xの左端、Xの右端、Yの下端、Yの上端
+        // 设定视图矩阵的屏幕矩形范围
         viewMatrix.setScreenRect(left, right, bottom, top);
+        // 对视图矩阵进行默认缩放
         viewMatrix.scale(Scale.DEFAULT.getValue(), Scale.DEFAULT.getValue());
 
-        // 単位行列に初期化
+        // 重置设备到屏幕的矩阵为单位矩阵
         deviceToScreen.loadIdentity();
 
+        // 根据窗口的形状，对设备到屏幕的矩阵进行缩放
         if (width > height) {
             float screenW = Math.abs(right - left);
             deviceToScreen.scaleRelative(screenW / width, -screenW / width);
@@ -60,18 +65,19 @@ public class LAppView {
             float screenH = Math.abs(top - bottom);
             deviceToScreen.scaleRelative(screenH / height, -screenH / height);
         }
+        // 将设备到屏幕的矩阵平移至屏幕中心
         deviceToScreen.translateRelative(-width * 0.5f, -height * 0.5f);
 
-        // 表示範囲の設定
-        viewMatrix.setMaxScale(Scale.MAX.getValue());   // 限界拡大率
-        viewMatrix.setMinScale(Scale.MIN.getValue());   // 限界縮小率
+        // 设置视图矩阵的缩放范围
+        viewMatrix.setMaxScale(Scale.MAX.getValue());   // 设置最大缩放率
+        viewMatrix.setMinScale(Scale.MIN.getValue());   // 设置最小缩放率
 
-        // 表示できる最大範囲
+        // 设置视图矩阵的最大显示范围
         viewMatrix.setMaxScreenRect(
-            MaxLogicalView.LEFT.getValue(),
-            MaxLogicalView.RIGHT.getValue(),
-            MaxLogicalView.BOTTOM.getValue(),
-            MaxLogicalView.TOP.getValue()
+                MaxLogicalView.LEFT.getValue(),
+                MaxLogicalView.RIGHT.getValue(),
+                MaxLogicalView.BOTTOM.getValue(),
+                MaxLogicalView.TOP.getValue()
         );
     }
 

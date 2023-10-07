@@ -522,6 +522,7 @@ public class LAppModel extends CubismUserModel {
 
         // レイアウト情報が存在すればその情報からモデル行列をセットアップする
         if (modelSetting.getLayoutMap(layout)) {
+            layout.put("y", 10.0f); // 10.0f 是您希望移动的距离
             modelMatrix.setupFromLayout(layout);
         }
 

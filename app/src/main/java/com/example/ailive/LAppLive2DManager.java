@@ -74,11 +74,13 @@ public class LAppLive2DManager {
         }
     }
 
-    // モデル更新処理及び描画処理を行う
+    // 执行模型的更新和绘制处理
     public void onUpdate() {
+        // 获取窗口的宽度和高度
         int width = LAppDelegate.getInstance().getWindowWidth();
         int height = LAppDelegate.getInstance().getWindowHeight();
 
+        // 遍历所有模型
         for (int i = 0; i < models.size(); i++) {
             LAppModel model = models.get(i);
 
@@ -87,29 +89,38 @@ public class LAppLive2DManager {
                 continue;
             }
 
+            // 重置投影矩阵
             projection.loadIdentity();
 
+            // 如果模型的画布宽度大于1.0且窗口宽度小于高度（竖屏）
             if (model.getModel().getCanvasWidth() > 1.0f && width < height) {
-                // 横に長いモデルを縦長ウィンドウに表示する際モデルの横サイズでscaleを算出する
+                // 当要在竖屏上显示宽模型时，根据模型的宽度来计算缩放比例
                 model.getModelMatrix().setWidth(2.0f);
                 projection.scale(1.0f, (float) width / (float) height);
+
+                // 将模型中心点向下移动
+                float yOffset = -0.2f; // 根据您的需求调整此值
+                model.getModelMatrix().translateY(yOffset);
             } else {
+                // 根据窗口的宽高比来调整投影矩阵
                 projection.scale((float) height / (float) width, 1.0f);
             }
 
-            // 必要があればここで乗算する
+            // 如果viewMatrix不为空，则将其乘以投影矩阵
             if (viewMatrix != null) {
                 viewMatrix.multiplyByMatrix(projection);
             }
 
-            // モデル1体描画前コール
+            // 模型绘制前的处理
             LAppDelegate.getInstance().getView().preModelDraw(model);
 
+            // 更新模型
             model.update();
 
-            model.draw(projection);     // 参照渡しなのでprojectionは変質する
+            // 绘制模型（注意，传入的投影矩阵可能会被修改）
+            model.draw(projection);
 
-            // モデル1体描画後コール
+            // 模型绘制后的处理
             LAppDelegate.getInstance().getView().postModelDraw(model);
         }
     }

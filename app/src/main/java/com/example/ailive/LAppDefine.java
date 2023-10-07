@@ -192,33 +192,34 @@ public class LAppDefine {
     }
 
     /**
-     * MOC3の整合性を検証するかどうか。有効ならtrue。
+     * 是否验证MOC3的整合性。如果要验证则为true。
      */
     public static final boolean MOC_CONSISTENCY_VALIDATION_ENABLE = true;
 
     /**
-     * Enable/Disable debug logging.
+     * 启用/禁用调试日志。
      */
     public static final boolean DEBUG_LOG_ENABLE = true;
     /**
-     * Enable/Disable debug logging for processing tapping information.
+     * 启用/禁用触摸信息处理的调试日志。
      */
     public static final boolean DEBUG_TOUCH_LOG_ENABLE = true;
     /**
-     * Setting the level of the log output from the Framework.
+     * 设置Framework的日志输出级别。
      */
     public static final LogLevel cubismLoggingLevel = LogLevel.VERBOSE;
     /**
-     * Enable/Disable premultiplied alpha.
+     * 启用/禁用预乘alpha。
      */
     public static final boolean PREMULTIPLIED_ALPHA_ENABLE = true;
 
     /**
-     * Flag whether to draw to the target held by LAppView. (If both USE_RENDER_TARGET and USE_MODEL_RENDER_TARGET are true, this variable is given priority over USE_MODEL_RENDER_TARGET.)
+     * 标记是否绘制到LAppView持有的目标。(如果USE_RENDER_TARGET
+     * 和USE_MODEL_RENDER_TARGET都为true，那么此变量的优先级高于USE_MODEL_RENDER_TARGET。)
      */
     public static final boolean USE_RENDER_TARGET = false;
     /**
-     * Flag whether to draw to the target that each LAppModel has.
+     * 标记是否绘制到每个LAppModel拥有的目标。
      */
     public static final boolean USE_MODEL_RENDER_TARGET = false;
 }
