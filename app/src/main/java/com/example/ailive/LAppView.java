@@ -92,11 +92,6 @@ public class LAppView {
         float fWidth = backgroundTexture.width * 2.0f;
         float fHeight = windowHeight * 0.95f;
 
-        if (backSprite == null) {
-            backSprite = new LAppSprite(x, y, fWidth, fHeight, backgroundTexture.id, programId);
-        } else {
-            backSprite.resize(x, y, fWidth, fHeight);
-        }
 
         // 歯車画像の読み込み
         LAppTextureManager.TextureInfo gearTexture = textureManager.createTextureFromPngFile(ResourcePath.ROOT.getPath() + ResourcePath.GEAR_IMAGE.getPath());
@@ -142,7 +137,6 @@ public class LAppView {
     // 描画する
     public void render() {
         // UIと背景の描画
-        backSprite.render();
         gearSprite.render();
         powerSprite.render();
 
