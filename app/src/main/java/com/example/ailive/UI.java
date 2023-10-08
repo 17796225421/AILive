@@ -1,5 +1,6 @@
 package com.example.ailive;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.PixelFormat;
@@ -8,7 +9,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
@@ -38,12 +38,15 @@ public class UI extends Activity {
     private SD sd;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         live2DView = findViewById(R.id.live2dView);
+        live2DView.setZOrderOnTop(true);
+        live2DView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         live2DView.setEGLContextClientVersion(2);
         live2DView.setRenderer(new GLRenderer());
         live2DView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
@@ -61,8 +64,9 @@ public class UI extends Activity {
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
 
+        backgroundImage = findViewById(R.id.background_image);
         changeBgBtn = findViewById(R.id.change_bg_btn);
-        sd = new SD(this);
+        sd = new SD(this,backgroundImage);
         sd.setupAutoImageSwitching();
 
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -232,7 +236,6 @@ public class UI extends Activity {
         float pointX = event.getX();
         float pointY = event.getY();
 
-        Log.i("zhouzihong", "event:" + event.toString());
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 LAppDelegate.getInstance().onTouchBegan(pointX, pointY);

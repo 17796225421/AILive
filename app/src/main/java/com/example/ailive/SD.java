@@ -31,9 +31,11 @@ import okhttp3.Response;
 
 public class SD {
     Context context;
+    ImageView backgroundImage;
 
-    public SD(Context context) {
+    public SD(Context context, ImageView backgroundImage) {
         this.context = context;
+        this.backgroundImage = backgroundImage;
     }
 
     private class FetchImageTask implements Runnable {
