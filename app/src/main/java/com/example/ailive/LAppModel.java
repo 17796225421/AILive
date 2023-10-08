@@ -410,22 +410,21 @@ public class LAppModel extends CubismUserModel {
         }
         return LAppPal.loadFileAsBytes(path);
     }
-
-    // model3.jsonからモデルを生成する
+    // 从model3.json创建模型
     private void setupModel(ICubismModelSetting setting) {
         modelSetting = setting;
 
         isUpdated = true;
         isInitialized = false;
 
-        // Load Cubism Model
+        // 加载Cubism模型
         {
             String fileName = modelSetting.getModelFileName();
             if (!fileName.equals("")) {
                 String path = modelHomeDirectory + fileName;
 
                 if (LAppDefine.DEBUG_LOG_ENABLE) {
-                    LAppPal.printLog("create model: " + modelSetting.getModelFileName());
+                    LAppPal.printLog("创建模型: " + modelSetting.getModelFileName());
                 }
 
                 byte[] buffer = createBuffer(path);
@@ -433,7 +432,7 @@ public class LAppModel extends CubismUserModel {
             }
         }
 
-        // load expression files(.exp3.json)
+        // 加载表达文件(.exp3.json)
         {
             if (modelSetting.getExpressionCount() > 0) {
                 final int count = modelSetting.getExpressionCount();
@@ -451,7 +450,7 @@ public class LAppModel extends CubismUserModel {
             }
         }
 
-        // Physics
+        // 物理效果
         {
             String path = modelSetting.getPhysicsFileName();
             if (!path.equals("")) {
@@ -462,7 +461,7 @@ public class LAppModel extends CubismUserModel {
             }
         }
 
-        // Pose
+        // 姿势
         {
             String path = modelSetting.getPoseFileName();
             if (!path.equals("")) {
@@ -472,12 +471,12 @@ public class LAppModel extends CubismUserModel {
             }
         }
 
-        // Load eye blink data
+        // 加载眨眼数据
         if (modelSetting.getEyeBlinkParameterCount() > 0) {
             eyeBlink = CubismEyeBlink.create(modelSetting);
         }
 
-        // Load Breath Data
+        // 加载呼吸数据
         breath = CubismBreath.create();
         List<CubismBreath.BreathParameterData> breathParameters = new ArrayList<CubismBreath.BreathParameterData>();
 
@@ -489,7 +488,7 @@ public class LAppModel extends CubismUserModel {
 
         breath.setParameters(breathParameters);
 
-        // Load UserData
+        // 加载用户数据
         {
             String path = modelSetting.getUserDataFile();
             if (!path.equals("")) {
@@ -498,7 +497,6 @@ public class LAppModel extends CubismUserModel {
                 loadUserData(buffer);
             }
         }
-
 
         // EyeBlinkIds
         int eyeBlinkIdCount = modelSetting.getEyeBlinkParameterCount();
@@ -513,14 +511,14 @@ public class LAppModel extends CubismUserModel {
         }
 
         if (modelSetting == null || modelMatrix == null) {
-            LAppPal.printLog("Failed to setupModel().");
+            LAppPal.printLog("模型设置失败。");
             return;
         }
 
-        // Set layout
+        // 设置布局
         Map<String, Float> layout = new HashMap<String, Float>();
 
-        // レイアウト情報が存在すればその情報からモデル行列をセットアップする
+        // 如果存在布局信息，从该信息设置模型矩阵
         if (modelSetting.getLayoutMap(layout)) {
             layout.put("y", 10.0f); // 10.0f 是您希望移动的距离
             modelMatrix.setupFromLayout(layout);
@@ -528,7 +526,7 @@ public class LAppModel extends CubismUserModel {
 
         model.saveParameters();
 
-        // Load motions
+        // 加载动作
         for (int i = 0; i < modelSetting.getMotionGroupCount(); i++) {
             String group = modelSetting.getMotionGroupName(i);
             preLoadMotionGroup(group);

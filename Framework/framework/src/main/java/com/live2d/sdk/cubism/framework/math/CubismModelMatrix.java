@@ -7,6 +7,8 @@
 
 package com.live2d.sdk.cubism.framework.math;
 
+import android.util.Log;
+
 import java.util.Map;
 
 /**
@@ -19,7 +21,6 @@ public class CubismModelMatrix extends CubismMatrix44 {
      * @param w 宽度
      * @param h 高度
      * @return 带有指定宽度和高度的CubismModelMatrix实例
-     *
      * @throws IllegalArgumentException 如果参数等于0或小于0
      */
     public static CubismModelMatrix create(float w, float h) {
@@ -62,21 +63,21 @@ public class CubismModelMatrix extends CubismMatrix44 {
     }
 
     /**
-     * Set the position.
+     * 设置位置。
      *
-     * @param x X-axis position
-     * @param y Y-axis position
+     * @param x X轴的位置
+     * @param y Y轴的位置
      */
     public void setPosition(float x, float y) {
         translate(x, y);
     }
 
     /**
-     * Set the center position.
-     * Be sure to set the width or height before using this method.
+     * 设置中心位置。
+     * 在使用此方法之前，请确保设置了宽度或高度。
      *
-     * @param x center position of X-axis
-     * @param y center position of Y-axis
+     * @param x X轴的中心位置
+     * @param y Y轴的中心位置
      */
     public void setCenterPosition(float x, float y) {
         centerX(x);
@@ -122,9 +123,9 @@ public class CubismModelMatrix extends CubismMatrix44 {
     }
 
     /**
-     * Set the center position of X-axis.
+     * 设置X轴的中心位置。
      *
-     * @param x center position of X-axis
+     * @param x X轴的中心位置
      */
     public void centerX(float x) {
         final float w = width * getScaleX();
@@ -160,9 +161,9 @@ public class CubismModelMatrix extends CubismMatrix44 {
     }
 
     /**
-     * Set position from layout information.
+     * 根据布局信息设置位置。
      *
-     * @param layout layout information
+     * @param layout 布局信息
      */
     public void setupFromLayout(Map<String, Float> layout) {
         final String keyWidth = "width";
@@ -188,7 +189,7 @@ public class CubismModelMatrix extends CubismMatrix44 {
         for (Map.Entry<String, Float> entry : layout.entrySet()) {
             String key = entry.getKey();
             float value = entry.getValue();
-
+            Log.i("zhouzihong", key + ":" + value);
             if (key.equals(keyX)) {
                 setX(value);
             } else if (key.equals(keyY)) {

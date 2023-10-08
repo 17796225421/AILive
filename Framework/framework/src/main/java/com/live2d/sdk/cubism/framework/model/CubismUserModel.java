@@ -36,7 +36,7 @@ public abstract class CubismUserModel {
      * Call the EventFired which is inherited from CubismUserModel.
      *
      * @param eventValue the string data of the fired event
-     * @param model an instance inherited with CubismUserModel
+     * @param model      an instance inherited with CubismUserModel
      */
     public static void cubismDefaultMotionEventCallback(String eventValue, CubismUserModel model) {
         if (model != null) {
@@ -50,8 +50,8 @@ public abstract class CubismUserModel {
      * Get whether the Drawable has been hit at the specified position.
      *
      * @param drawableId Drawable ID which will be verified.
-     * @param pointX X-position
-     * @param pointY Y-position
+     * @param pointX     X-position
+     * @param pointY     Y-position
      * @return true      If it is hit, return true.
      */
     public boolean isHit(CubismId drawableId, float pointX, float pointY) {
@@ -101,26 +101,25 @@ public abstract class CubismUserModel {
 
         return (left <= tx) && (tx <= right) && (top <= ty) && (ty <= bottom);
     }
+
     /**
      * 接收生成的渲染器并进行初始化。<br>
      * 使用此方法时，用于绘制剪切遮罩的缓冲区的默认数量为1。
      *
-     * @note 如果给定的参数是null，则会抛出`NullPointerException`。
-     *
      * @param renderer 继承自CubismRenderer的渲染器类的实例
+     * @note 如果给定的参数是null，则会抛出`NullPointerException`。
      */
     public void setupRenderer(CubismRenderer renderer) {
-        setupRenderer(renderer,1);
+        setupRenderer(renderer, 1);
     }
 
     /**
      * 接收生成的渲染器并进行初始化。<br>
      * 如果你想增加用于绘制剪切遮罩的缓冲区的数量超过默认的1张，可以使用此方法。
      *
-     * @note 如果第1个参数是null，则会抛出`NullPointerException`。
-     *
-     * @param renderer 继承自CubismRenderer的渲染器类的实例
+     * @param renderer        继承自CubismRenderer的渲染器类的实例
      * @param maskBufferCount 想要生成的遮罩缓冲区的数量
+     * @note 如果第1个参数是null，则会抛出`NullPointerException`。
      */
     public void setupRenderer(CubismRenderer renderer, int maskBufferCount) {
         this.renderer = renderer;
@@ -189,6 +188,7 @@ public abstract class CubismUserModel {
         // 设置拖动管理器中的x和y坐标
         dragManager.set(x, y);
     }
+
     /**
      * Set an acceleration information.
      *
@@ -294,7 +294,8 @@ public abstract class CubismUserModel {
         this.model = model;
 
         this.model.saveParameters();
-        modelMatrix = CubismModelMatrix.create(2.67f,  2.78f);
+        modelMatrix = CubismModelMatrix.create(2.67f, 2.78f);
+        modelMatrix.setPosition(0.3f, -0.5f);
     }
 
     /**
@@ -318,13 +319,13 @@ public abstract class CubismUserModel {
     /**
      * Load a motion data.
      *
-     * @param buffer a buffer where motion3.json file is loaded.
+     * @param buffer                  a buffer where motion3.json file is loaded.
      * @param onFinishedMotionHandler the callback method called at finishing motion play. If it is null, callbacking methods is not conducting.
      * @return motion class
      */
     protected CubismMotion loadMotion(
-        byte[] buffer,
-        IFinishedMotionCallback onFinishedMotionHandler
+            byte[] buffer,
+            IFinishedMotionCallback onFinishedMotionHandler
     ) {
         return CubismMotion.create(buffer, onFinishedMotionHandler);
     }
@@ -375,6 +376,7 @@ public abstract class CubismUserModel {
     protected void loadUserData(final byte[] buffer) {
         modelUserData = CubismModelUserData.create(buffer);
     }
+
     /**
      * Moc 数据
      */

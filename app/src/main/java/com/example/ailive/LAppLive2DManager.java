@@ -181,14 +181,14 @@ public class LAppLive2DManager {
     }
 
     /**
-     * シーンを切り替える
+     * 切换场景。
      *
-     * @param index 切り替えるシーンインデックス
+     * @param index 要切换的场景索引
      */
     public void changeScene(int index) {
         currentModel = index;
         if (DEBUG_LOG_ENABLE) {
-            LAppPal.printLog("model index: " + currentModel);
+            LAppPal.printLog("模型索引: " + currentModel);
         }
 
         String modelDirName = modelDir.get(index);
@@ -202,36 +202,37 @@ public class LAppLive2DManager {
         models.get(0).loadAssets(modelPath, modelJsonName);
 
         /*
-         * モデル半透明表示を行うサンプルを提示する。
-         * ここでUSE_RENDER_TARGET、USE_MODEL_RENDER_TARGETが定義されている場合
-         * 別のレンダリングターゲットにモデルを描画し、描画結果をテクスチャとして別のスプライトに張り付ける。
+         * 提供将模型显示为半透明的示例。
+         * 在这里，如果定义了USE_RENDER_TARGET和USE_MODEL_RENDER_TARGET，
+         * 它将在另一个渲染目标上绘制模型，并将绘图结果作为纹理粘贴到另一个精灵上。
          */
         LAppView.RenderingTarget useRenderingTarget;
         if (USE_RENDER_TARGET) {
-            // LAppViewの持つターゲットに描画を行う場合こちらを選択
+            // 如果要在LAppView所持有的目标上进行绘制，则选择此选项
             useRenderingTarget = LAppView.RenderingTarget.VIEW_FRAME_BUFFER;
         } else if (USE_MODEL_RENDER_TARGET) {
-            // 各LAppModelの持つターゲットに描画を行う場合こちらを選択
+            // 如果要在每个LAppModel所持有的目标上进行绘制，则选择此选项
             useRenderingTarget = LAppView.RenderingTarget.MODEL_FRAME_BUFFER;
         } else {
-            // デフォルトのメインフレームバッファへレンダリングする(通常)
+            // 渲染到默认的主帧缓冲区（常规）
             useRenderingTarget = LAppView.RenderingTarget.NONE;
         }
 
         if (USE_RENDER_TARGET || USE_MODEL_RENDER_TARGET) {
-            // モデル個別にαを付けるサンプルとして、もう1体モデルを作成し少し位置をずらす。
+            // 作为为模型单独添加α的示例，创建另一个模型并稍微移动其位置。
             models.add(new LAppModel());
             models.get(1).loadAssets(modelPath, modelJsonName);
             models.get(1).getModelMatrix().translateX(0.2f);
         }
 
-        // レンダリングターゲットを切り替える
+        // 切换渲染目标
         LAppDelegate.getInstance().getView().switchRenderingTarget(useRenderingTarget);
 
-        // 別レンダリング先を選択した際の背景クリア色
+        // 选择了其他渲染目标时的背景清除色
         float[] clearColor = {1.0f, 1.0f, 1.0f};
         LAppDelegate.getInstance().getView().setRenderingTargetClearColor(clearColor[0], clearColor[1], clearColor[2]);
     }
+
 
     /**
      * 現在のシーンで保持しているモデルを返す

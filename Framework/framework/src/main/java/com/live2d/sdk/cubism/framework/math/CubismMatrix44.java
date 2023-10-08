@@ -238,10 +238,10 @@ public class CubismMatrix44 {
     }
 
     /**
-     * Translates the X-coordinate of the current matrix to the position specified by the argument.
-     * The coordinate of the argument must be entered in a screen coodinate system.
+     * 将当前矩阵的X坐标平移到参数指定的位置。
+     * 参数的坐标必须以屏幕坐标系统为准。
      *
-     * @param x X-coordinate of destination
+     * @param x 目标的X坐标
      */
     public void translateX(float x) {
         tr[12] = x;
