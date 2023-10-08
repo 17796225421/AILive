@@ -22,6 +22,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -55,7 +56,11 @@ public class SD {
     private Bitmap callSdApi() throws IOException, JSONException {
         String endpoint = "http://sd.fc-stable-diffusion-api.1928670300438578.cn-shenzhen.fc.devsapp.net";
 
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(60, TimeUnit.SECONDS) // 设置连接超时
+                .readTimeout(60, TimeUnit.SECONDS)    // 设置读取超时
+                .writeTimeout(60, TimeUnit.SECONDS)   // 设置写入超时
+                .build();
 
         JSONObject json = new JSONObject();
         // 设置基本属性
@@ -177,7 +182,7 @@ public class SD {
                     }
                 });
             }
-        }, 0, 10000);
+        }, 0, 60000);
     }
 
     private void randomSwitchImage() {
@@ -208,6 +213,8 @@ public class SD {
         // 将文件转换为Bitmap
         Bitmap bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
 
+        // 设置Bitmap到ImageView上
+        backgroundImage.setImageBitmap(bitmap);
     }
 
 }
