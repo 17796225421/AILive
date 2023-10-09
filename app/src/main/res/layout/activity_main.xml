@@ -21,9 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
-        android:background="@android:color/transparent"
-        android:visibility="invisible"
-        tools:visibility="invisible" />
+        android:background="@android:color/transparent" />
 
 
 

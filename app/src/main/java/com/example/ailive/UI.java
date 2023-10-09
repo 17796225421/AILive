@@ -46,6 +46,7 @@ public class UI extends Activity {
 
         live2DView = findViewById(R.id.live2dView);
         live2DView.setZOrderOnTop(true);
+        live2DView.setZOrderMediaOverlay(true);
         live2DView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         live2DView.setEGLContextClientVersion(2);
         live2DView.setRenderer(new GLRenderer());
