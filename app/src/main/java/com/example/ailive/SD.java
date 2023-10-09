@@ -32,11 +32,9 @@ import okhttp3.Response;
 
 public class SD {
     Context context;
-    ImageView backgroundImage;
 
-    public SD(Context context, ImageView backgroundImage) {
+    public SD(Context context) {
         this.context = context;
-        this.backgroundImage = backgroundImage;
     }
 
     private class FetchImageTask implements Runnable {
@@ -214,7 +212,7 @@ public class SD {
         Bitmap bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
 
         // 设置Bitmap到ImageView上
-        backgroundImage.setImageBitmap(bitmap);
+//        backgroundImage.setImageBitmap(bitmap);
     }
 
 }

@@ -5,9 +5,9 @@
  * that can be found at http://live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-package com.example.ailive;
+package com.example.ailive.live2d;
 
-import static com.example.ailive.LAppDefine.*;
+import static com.example.ailive.live2d.LAppDefine.*;
 
 import com.live2d.sdk.cubism.framework.math.CubismMatrix44;
 import com.live2d.sdk.cubism.framework.math.CubismViewMatrix;

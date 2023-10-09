@@ -5,7 +5,7 @@
  * that can be found at http://live2d.com/eula/live2d-open-software-license-agreement_en.html.
  */
 
-package com.example.ailive;
+package com.example.ailive.live2d;
 
 import static android.opengl.GLES20.GL_COLOR_BUFFER_BIT;
 import static android.opengl.GLES20.GL_DEPTH_BUFFER_BIT;
@@ -76,37 +76,37 @@ public class LAppDelegate {
     }
 
     public void onSurfaceCreated() {
-        // テクスチャサンプリング設定
-        GLES20.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        GLES20.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        // 设置纹理采样参数
+        GLES20.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // 设置放大滤镜为线性滤镜
+        GLES20.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // 设置缩小滤镜为线性滤镜
 
-        // 透過設定
-        GLES20.glEnable(GLES20.GL_BLEND);
-        GLES20.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        // 设置透明度
+        GLES20.glEnable(GLES20.GL_BLEND); // 启用混合模式
+        GLES20.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); // 设置混合函数
 
-        // Initialize Cubism SDK framework
+        // 初始化Cubism SDK框架
         CubismFramework.initialize();
 
-        // シェーダーの初期化
+        // 初始化着色器
         view.initializeShader();
     }
 
     public void onSurfaceChanged(int width, int height) {
-        // 描画範囲指定
+        // 设定绘制范围
         GLES20.glViewport(0, 0, width, height);
-        windowWidth = width;
-        windowHeight = height;
+        windowWidth = width;  // 更新窗口宽度
+        windowHeight = height; // 更新窗口高度
 
-        // AppViewの初期化
+        // 初始化AppView
         view.initialize();
         view.initializeSprite();
 
-        // load models
+        // 加载模型
         if (LAppLive2DManager.getInstance().getCurrentModel() != currentModel) {
-            LAppLive2DManager.getInstance().changeScene(currentModel);
+            LAppLive2DManager.getInstance().changeScene(currentModel); // 如果当前模型不是预期模型，切换场景
         }
 
-        isActive = true;
+        isActive = true;  // 设置为活跃状态
     }
 
     public void run() {

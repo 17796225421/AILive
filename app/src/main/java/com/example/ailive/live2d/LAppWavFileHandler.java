@@ -7,7 +7,7 @@
  *
  */
 
-package com.example.ailive;
+package com.example.ailive.live2d;
 
 import android.content.res.AssetFileDescriptor;
 import android.media.AudioAttributes;

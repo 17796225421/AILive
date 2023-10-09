@@ -1,9 +1,7 @@
 package com.example.ailive;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.pm.PackageManager;
-import android.graphics.PixelFormat;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +17,8 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 
 import com.alibaba.idst.nui.CommonUtils;
+import com.example.ailive.live2d.GLRenderer;
+import com.example.ailive.live2d.LAppDelegate;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -38,36 +38,31 @@ public class UI extends Activity {
     private SD sd;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         live2DView = findViewById(R.id.live2dView);
-        live2DView.setZOrderOnTop(true);
-        live2DView.setZOrderMediaOverlay(true);
-        live2DView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
         live2DView.setEGLContextClientVersion(2);
         live2DView.setRenderer(new GLRenderer());
         live2DView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
         CommonUtils.copyAssetsData(this);
 
-        askView = (EditText) findViewById(R.id.askView);
-        gptView = (TextView) findViewById(R.id.GPTView);
+        askView = findViewById(R.id.askView);
+        gptView = findViewById(R.id.GPTView);
 
-        startButton = (Button) findViewById(R.id.button_start);
-        cancelButton = (Button) findViewById(R.id.button_cancel);
+        startButton = findViewById(R.id.button_start);
+        cancelButton = findViewById(R.id.button_cancel);
         submitButton = findViewById(R.id.submitButton);
 
         setButtonState(startButton, true);
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
 
-        backgroundImage = findViewById(R.id.background_image);
         changeBgBtn = findViewById(R.id.change_bg_btn);
-        sd = new SD(this,backgroundImage);
+        sd = new SD(this);
         sd.setupAutoImageSwitching();
 
         startButton.setOnClickListener(new View.OnClickListener() {
