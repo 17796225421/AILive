@@ -116,7 +116,7 @@ public class LAppDefine {
         /**
          * Background image file
          */
-        BACK_IMAGE("back_class_normal.png");
+        BACK_IMAGE("initialBack.png");
         private final String path;
 
         ResourcePath(String path) {
