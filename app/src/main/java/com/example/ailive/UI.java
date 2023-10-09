@@ -27,7 +27,6 @@ public class UI extends Activity {
     private Button startButton;
     private Button cancelButton;
     private Button submitButton;
-    private ImageView backgroundImage;
     private Button changeBgBtn;
     private EditText askView;
     private TextView gptView;
