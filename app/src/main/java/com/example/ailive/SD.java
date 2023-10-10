@@ -187,7 +187,7 @@ public class SD {
                     listener.onNewBackgroundImage(newImage);
                 }
             }
-        }, 0, 10000);
+        }, 0, 60000);
     }
 
     private Bitmap randomSwitchImage() {
