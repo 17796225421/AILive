@@ -9,6 +9,9 @@ import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import com.example.ailive.live2d.BackgroundImageListener;
+import com.example.ailive.live2d.LAppDelegate;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,8 +36,14 @@ import okhttp3.Response;
 public class SD {
     Context context;
 
+    private BackgroundImageListener listener;
+
     public SD(Context context) {
         this.context = context;
+    }
+
+    public void setBackgroundImageListener(BackgroundImageListener listener) {
+        this.listener = listener;
     }
 
     private class FetchImageTask implements Runnable {
@@ -173,23 +182,17 @@ public class SD {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                ((Activity) context).runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        randomSwitchImage();
-                    }
-                });
+                Bitmap newImage = randomSwitchImage();
+                if (listener != null) {
+                    listener.onNewBackgroundImage(newImage);
+                }
             }
-        }, 0, 60000);
+        }, 0, 10000);
     }
 
-    private void randomSwitchImage() {
+    private Bitmap randomSwitchImage() {
 
         File directory = context.getExternalFilesDir(null);
-        if (directory == null || !directory.exists()) {
-            Log.e("zhouzihong", "Directory not found");
-            return;
-        }
 
         // 获取PNG文件列表
         File[] files = directory.listFiles(new FileFilter() {
@@ -199,20 +202,13 @@ public class SD {
             }
         });
 
-        if (files == null || files.length == 0) {
-            Log.e("zhouzihong", "No PNG files found");
-            return;
-        }
-
         // 随机选择一个文件
         int randomIndex = (int) (Math.random() * files.length);
         File selectedFile = files[randomIndex];
-
+        Log.i("zhouzihong", selectedFile.getAbsolutePath());
         // 将文件转换为Bitmap
         Bitmap bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
-
-        // 设置Bitmap到ImageView上
-//        backgroundImage.setImageBitmap(bitmap);
+        return bitmap;
     }
 
 }

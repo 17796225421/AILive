@@ -13,6 +13,11 @@ import com.live2d.sdk.cubism.framework.math.CubismMatrix44;
 import com.live2d.sdk.cubism.framework.math.CubismViewMatrix;
 import com.live2d.sdk.cubism.framework.rendering.android.CubismOffscreenSurfaceAndroid;
 
+import android.graphics.Bitmap;
+import android.opengl.GLES20;
+import android.opengl.GLUtils;
+import android.util.Log;
+
 public class LAppView {
     /**
      * LAppModelのレンダリング先
@@ -34,6 +39,7 @@ public class LAppView {
     public void initializeShader() {
         programId = LAppDelegate.getInstance().createShader();
     }
+
     // 初始化视图
     public void initialize() {
         // 获取窗口的宽和高
@@ -127,10 +133,10 @@ public class LAppView {
         // 各モデルが持つ描画ターゲットをテクスチャとする場合
         if (renderingTarget == RenderingTarget.MODEL_FRAME_BUFFER && renderingSprite != null) {
             final float[] uvVertex = {
-                1.0f, 1.0f,
-                0.0f, 1.0f,
-                0.0f, 0.0f,
-                1.0f, 0.0f
+                    1.0f, 1.0f,
+                    0.0f, 1.0f,
+                    0.0f, 0.0f,
+                    1.0f, 0.0f
             };
 
             for (int i = 0; i < live2dManager.getModelNum(); i++) {
@@ -160,8 +166,8 @@ public class LAppView {
 
             // 使用するターゲット
             useTarget = (renderingTarget == RenderingTarget.VIEW_FRAME_BUFFER)
-                        ? renderingBuffer
-                        : refModel.getRenderingBuffer();
+                    ? renderingBuffer
+                    : refModel.getRenderingBuffer();
 
             // 描画ターゲット内部未作成の場合はここで作成
             if (!useTarget.isValid()) {
@@ -189,8 +195,8 @@ public class LAppView {
         if (renderingTarget != RenderingTarget.NONE) {
             // 使用するターゲット
             useTarget = (renderingTarget == RenderingTarget.VIEW_FRAME_BUFFER)
-                        ? renderingBuffer
-                        : refModel.getRenderingBuffer();
+                    ? renderingBuffer
+                    : refModel.getRenderingBuffer();
 
             // レンダリング終了
             useTarget.endDraw();
@@ -198,10 +204,10 @@ public class LAppView {
             // LAppViewの持つフレームバッファを使うなら、スプライトへの描画はこことなる
             if (renderingTarget == RenderingTarget.VIEW_FRAME_BUFFER && renderingSprite != null) {
                 final float[] uvVertex = {
-                    1.0f, 1.0f,
-                    0.0f, 1.0f,
-                    0.0f, 0.0f,
-                    1.0f, 0.0f
+                        1.0f, 1.0f,
+                        0.0f, 1.0f,
+                        0.0f, 0.0f,
+                        1.0f, 0.0f
                 };
                 renderingSprite.setColor(1.0f, 1.0f, 1.0f, getSpriteAlpha(0));
                 renderingSprite.renderImmediate(useTarget.getColorBuffer()[0], uvVertex);
@@ -360,6 +366,38 @@ public class LAppView {
         return renderingTarget;
     }
 
+    public void updateBackSpriteFromBitmap(Bitmap bitmap) {
+        updateTextureFromBitmap(1, bitmap);
+
+        Log.i("zhouzihong", "1");
+    }
+
+    private void updateTextureFromBitmap(int existingTextureId, Bitmap bitmap) {
+        // 激活纹理
+        GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, existingTextureId);
+
+        // 使用新的Bitmap更新纹理内容
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+
+        // 生成新的mipmap
+        GLES20.glGenerateMipmap(GLES20.GL_TEXTURE_2D);
+
+        // 纹理过滤参数，如之前设置的那样
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR_MIPMAP_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+
+        bitmap.recycle();
+        bitmap = null;
+    }
+
+    public void setNewBackgroundImage(Bitmap image) {
+        if (backSprite != null) {
+            backSprite.setNewBackgroundImage(image);
+        }
+    }
+
+
     private final CubismMatrix44 deviceToScreen = CubismMatrix44.create(); // 将设备坐标转换为屏幕坐标的矩阵
     private final CubismViewMatrix viewMatrix = new CubismViewMatrix();   // 用于执行屏幕显示的缩放和移动转换的矩阵
     private int programId;
@@ -376,6 +414,10 @@ public class LAppView {
     private final float[] clearColor = new float[4];
 
     private CubismOffscreenSurfaceAndroid renderingBuffer = new CubismOffscreenSurfaceAndroid();
+
+    public LAppSprite getBackSprite() {
+        return backSprite;
+    }
 
     private LAppSprite backSprite;
     private LAppSprite renderingSprite;

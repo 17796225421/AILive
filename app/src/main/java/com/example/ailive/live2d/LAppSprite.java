@@ -11,21 +11,51 @@ import static android.opengl.GLES20.GL_FLOAT;
 import static android.opengl.GLES20.GL_TEXTURE_2D;
 import static android.opengl.GLES20.glVertexAttribPointer;
 
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
+import android.opengl.GLUtils;
+import android.util.Log;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
 
 public class LAppSprite {
-    public LAppSprite(
-        float x,
-        float y,
-        float width,
-        float height,
-        int textureId,
-        int programId
-    ) {
+
+    private Bitmap newBackgroundImage;
+    private boolean isUpdateNeeded = false;
+
+    public void setNewBackgroundImage(Bitmap newImage) {
+        newBackgroundImage = newImage;
+        isUpdateNeeded = true;
+    }
+
+    public void updateTextureIfNeeded() {
+        if (isUpdateNeeded) {
+            // 先删除旧的纹理
+            GLES20.glDeleteTextures(1, new int[]{textureId}, 0);
+
+            // 为新图像生成新的纹理
+            textureId = createTextureFromBitmap(newBackgroundImage);
+
+            isUpdateNeeded = false;
+        }
+    }
+    private int createTextureFromBitmap(Bitmap bitmap) {
+        int[] textures = new int[1];
+        GLES20.glGenTextures(1, textures, 0);
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        // 设置纹理参数...
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MIN_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_MAG_FILTER, GLES20.GL_LINEAR);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_S, GLES20.GL_CLAMP_TO_EDGE);
+        GLES20.glTexParameteri(GLES20.GL_TEXTURE_2D, GLES20.GL_TEXTURE_WRAP_T, GLES20.GL_CLAMP_TO_EDGE);
+
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, bitmap, 0);
+        return textures[0];
+    }
+
+    public LAppSprite(float x, float y, float width, float height, int textureId, int programId) {
         rect.left = x - width * 0.5f;
         rect.right = x + width * 0.5f;
         rect.up = y + height * 0.5f;
@@ -100,6 +130,7 @@ public class LAppSprite {
         GLES20.glUniform4f(colorLocation, spriteColor[0], spriteColor[1], spriteColor[2], spriteColor[3]);
 
         GLES20.glBindTexture(GL_TEXTURE_2D, textureId);
+        Log.i("zhouzihong", "textureId" + textureId);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
     }
 
@@ -113,7 +144,7 @@ public class LAppSprite {
      * テクスチャIDを指定して描画する
      *
      * @param textureId テクスチャID
-     * @param uvVertex uv頂点座標
+     * @param uvVertex  uv頂点座標
      */
     public void renderImmediate(int textureId, final float[] uvVertex) {
         // attribute属性を有効にする
@@ -129,10 +160,10 @@ public class LAppSprite {
 
         // 頂点データ
         float[] positionVertex = {
-            (rect.right - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.up - maxHeight * 0.5f) / (maxHeight * 0.5f),
-            (rect.left - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.up - maxHeight * 0.5f) / (maxHeight * 0.5f),
-            (rect.left - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.down - maxHeight * 0.5f) / (maxHeight * 0.5f),
-            (rect.right - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.down - maxHeight * 0.5f) / (maxHeight * 0.5f)
+                (rect.right - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.up - maxHeight * 0.5f) / (maxHeight * 0.5f),
+                (rect.left - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.up - maxHeight * 0.5f) / (maxHeight * 0.5f),
+                (rect.left - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.down - maxHeight * 0.5f) / (maxHeight * 0.5f),
+                (rect.right - maxWidth * 0.5f) / (maxWidth * 0.5f), (rect.down - maxHeight * 0.5f) / (maxHeight * 0.5f)
         };
 
         // attribute属性を登録
@@ -194,6 +225,24 @@ public class LAppSprite {
         spriteColor[3] = a;
     }
 
+    public void updateBackgroundTexture(Bitmap newImage) {
+        Log.i("zhouzihong", "bitmap:" + newImage.toString());
+        // 先删除旧的纹理
+        GLES20.glDeleteTextures(1, new int[]{textureId}, 0);
+        int[] textures = new int[1];
+        GLES20.glGenTextures(1, textures, 0);
+        int error = GLES20.glGetError();
+        if (error != GLES20.GL_NO_ERROR) {
+            Log.e("OpenGL Error", "Error code: " + error);
+        }
+        Log.i("zhouzihong", "textures" + textures[0]);
+        textureId = textures[0];  // 保存新的纹理ID
+        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0]);
+        // 设置纹理参数...
+        GLUtils.texImage2D(GLES20.GL_TEXTURE_2D, 0, newImage, 0);
+    }
+
+
     /**
      * Rectクラス
      */
@@ -218,7 +267,12 @@ public class LAppSprite {
 
 
     private final Rect rect = new Rect();
-    private final int textureId;
+
+    public void setTextureId(int textureId) {
+        this.textureId = textureId;
+    }
+
+    private int textureId;
 
     private final int positionLocation;  // 位置アトリビュート
     private final int uvLocation; // UVアトリビュート
@@ -232,4 +286,5 @@ public class LAppSprite {
     private final float[] viewMatrix = new float[16];
 
     private int vPMatrixHandle;
+
 }

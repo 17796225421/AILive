@@ -21,12 +21,13 @@ import static android.opengl.GLES20.glClearDepthf;
 import static android.opengl.GLES20.glCreateShader;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
 import android.opengl.GLES20;
 import android.os.Build;
 
 import com.live2d.sdk.cubism.framework.CubismFramework;
 
-public class LAppDelegate {
+public class LAppDelegate implements BackgroundImageListener {
     public static LAppDelegate getInstance() {
         if (s_instance == null) {
             s_instance = new LAppDelegate();
@@ -165,14 +166,14 @@ public class LAppDelegate {
     public int createShader() {
         int vertexShaderId = glCreateShader(GLES20.GL_VERTEX_SHADER);
         final String vertexShader =
-            "#version 100\n"
-                + "attribute vec3 position;"
-                + "attribute vec2 uv;"
-                + "varying vec2 vuv;"
-                + "void main(void){"
-                + "gl_Position = vec4(position, 1.0);"
-                + "vuv = uv;"
-                + "}";
+                "#version 100\n"
+                        + "attribute vec3 position;"
+                        + "attribute vec2 uv;"
+                        + "varying vec2 vuv;"
+                        + "void main(void){"
+                        + "gl_Position = vec4(position, 1.0);"
+                        + "vuv = uv;"
+                        + "}";
 
         GLES20.glShaderSource(vertexShaderId, vertexShader);
         GLES20.glCompileShader(vertexShaderId);
@@ -180,14 +181,14 @@ public class LAppDelegate {
         // フラグメントシェーダのコンパイル
         int fragmentShaderId = glCreateShader(GLES20.GL_FRAGMENT_SHADER);
         final String fragmentShader =
-            "#version 100\n"
-                + "precision mediump float;"
-                + "uniform sampler2D texture;"
-                + "varying vec2 vuv;"
-                + "uniform vec4 baseColor;"
-                + "void main(void){"
-                + "gl_FragColor = texture2D(texture, vuv) * baseColor;"
-                + "}";
+                "#version 100\n"
+                        + "precision mediump float;"
+                        + "uniform sampler2D texture;"
+                        + "varying vec2 vuv;"
+                        + "uniform vec4 baseColor;"
+                        + "void main(void){"
+                        + "gl_FragColor = texture2D(texture, vuv) * baseColor;"
+                        + "}";
 
         GLES20.glShaderSource(fragmentShaderId, fragmentShader);
         GLES20.glCompileShader(fragmentShaderId);
@@ -267,4 +268,11 @@ public class LAppDelegate {
      * マウスのY座標
      */
     private float mouseY;
+
+    @Override
+    public void onNewBackgroundImage(Bitmap newImage) {
+        if (view != null) {
+            view.setNewBackgroundImage(newImage);
+        }
+    }
 }

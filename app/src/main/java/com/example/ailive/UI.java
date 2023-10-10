@@ -62,7 +62,9 @@ public class UI extends Activity {
 
         changeBgBtn = findViewById(R.id.change_bg_btn);
         sd = new SD(this);
+        sd.setBackgroundImageListener(LAppDelegate.getInstance());
         sd.setupAutoImageSwitching();
+
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override

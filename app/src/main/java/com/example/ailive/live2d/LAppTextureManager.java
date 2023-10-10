@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.opengl.GLUtils;
+import android.util.Log;
 
 import com.live2d.sdk.cubism.framework.CubismFramework;
 
@@ -50,7 +51,7 @@ public class LAppTextureManager {
         }
         // decodeStreamは乗算済みアルファとして画像を読み込むようである
         Bitmap bitmap = BitmapFactory.decodeStream(stream);
-
+        Log.i("zhouzihong", "bitmap" + bitmap);
         // Texture0をアクティブにする
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 
