@@ -166,11 +166,9 @@ public class SD {
     }
 
     private void updateUIWithImage(final Bitmap bitmap) {
-        ((Activity) context).runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-            }
-        });
+        if (listener != null) {
+            listener.onNewBackgroundImage(bitmap);
+        }
     }
 
     public void fetchAndSetNewBackgroundImage() {
