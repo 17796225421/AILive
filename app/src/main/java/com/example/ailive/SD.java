@@ -257,11 +257,11 @@ public class SD {
         json.put("s_tmin", 0);
         json.put("s_noise", 1);
         JSONObject overrideSettings = new JSONObject();
-        overrideSettings.put("sd_model_checkpoint", "cuteyukimixAdorable_midchapter3");
+        overrideSettings.put("sd_model_checkpoint", "cuteyukimixAdorable_midchapter3.safetensors [0212c833dc]");
         json.put("override_settings", overrideSettings);
         json.put("override_settings_restore_afterwards", true);
-        JSONArray scriptArgsArray = new JSONArray(new String[]{});
 
+        JSONArray scriptArgsArray = new JSONArray(new String[]{});
         json.put("script_args", scriptArgsArray);
         json.put("sampler_index", "DPM++ SDE Karras");
         json.put("script_name", null);
