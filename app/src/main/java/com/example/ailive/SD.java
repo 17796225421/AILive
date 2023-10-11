@@ -64,60 +64,13 @@ public class SD {
         String endpoint = "http://sd.fc-stable-diffusion-api.1928670300438578.cn-shenzhen.fc.devsapp.net";
 
         OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(60, TimeUnit.SECONDS) // 设置连接超时
-                .readTimeout(60, TimeUnit.SECONDS)    // 设置读取超时
-                .writeTimeout(60, TimeUnit.SECONDS)   // 设置写入超时
+                .connectTimeout(120, TimeUnit.SECONDS) // 设置连接超时
+                .readTimeout(120, TimeUnit.SECONDS)    // 设置读取超时
+                .writeTimeout(120, TimeUnit.SECONDS)   // 设置写入超时
                 .build();
 
-        JSONObject json = new JSONObject();
-        // 设置基本属性
-        json.put("denoising_strength", 0);
-        json.put("prompt", "puppy dogs");
-        json.put("negative_prompt", "");
-        json.put("seed", -1);
-        json.put("batch_size", 1);
-        json.put("n_iter", 1);
-        json.put("steps", 20);
-        json.put("cfg_scale", 7);
-        json.put("restore_faces", false);
-        json.put("tiling", false);
-        json.put("sampler_index", "Euler");
-        // 设置override_settings属性
-        JSONObject overrideSettings = new JSONObject();
-        overrideSettings.put("sd_model_checkpoint", "wlop-any.ckpt [7331f3bc87]");
-        json.put("override_settings", overrideSettings);
-        // 设置script_args属性
-        JSONArray scriptArgs = new JSONArray();
-        scriptArgs.put(0);
-        scriptArgs.put(true);
-        scriptArgs.put(true);
-        scriptArgs.put("LoRA");
-        scriptArgs.put("dingzhenlora_v1(fa7c1732cc95)");
-        scriptArgs.put(1);
-        scriptArgs.put(1);
-        json.put("script_args", scriptArgs);
+        JSONObject json = getJson();
 
-        // 获取屏幕的宽度和高度
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);  // 使用context来获取WindowManager
-        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
-        int deviceWidth = displayMetrics.widthPixels;
-        int deviceHeight = displayMetrics.heightPixels;
-        // 计算缩放因子
-        float scaleFactor = 1f;
-        if (deviceWidth > deviceHeight) {
-            scaleFactor = 1000f / deviceWidth;
-        } else {
-            scaleFactor = 1000f / deviceHeight;
-        }
-        // 如果任何一个维度大于1000，重新计算宽度和高度
-        if (deviceWidth > 1000 || deviceHeight > 1000) {
-            deviceWidth = Math.round(deviceWidth * scaleFactor);
-            deviceHeight = Math.round(deviceHeight * scaleFactor);
-        }
-        // 设置图片的宽度和高度
-        json.put("width", deviceWidth);
-        json.put("height", deviceHeight);
 
         MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
         RequestBody requestBody = RequestBody.create(json.toString(), mediaType);
@@ -207,6 +160,138 @@ public class SD {
         // 将文件转换为Bitmap
         Bitmap bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
         return bitmap;
+    }
+
+    private JSONObject getJson() throws JSONException {
+        JSONObject json = new JSONObject();
+
+        // 是否启用高分辨率模式 (High Resolution mode)。当设置为 `true` 时，将使用高分辨率的生成模型。默认值为 `false`。
+        json.put("enable_hr", false);
+
+        // 噪声抑制强度。该参数控制生成图像的噪声水平，较高的值可以减少噪声，但可能会损失图像的细节。默认值为 `0`。
+        json.put("denoising_strength", 0.57);
+
+        // 第一阶段生成的图像宽度。默认值为 `0`，表示使用默认的图像宽度。
+        json.put("firstphase_width", 0);
+
+        // 第一阶段生成的图像高度。默认值为 `0`，表示使用默认的图像高度。
+        json.put("firstphase_height", 0);
+
+        // 高分辨率模式下的放大倍数。当启用高分辨率模式时，生成的图像将以指定的倍数进行放大。默认值为 `2`。
+        json.put("hr_scale", 2);
+
+        // 高分辨率模式下的上采样器。该参数指定用于图像上采样的算法或模型。它可以是一个字符串，表示特定的上采样器，或者是一个模型的标识符。默认值为 "string"。
+        json.put("hr_upscaler", "R-ESRGAN 4x+ Anime6B");
+
+        // 高分辨率模式下的第二阶段生成步数。默认值为 `0`，表示只进行一次生成过程。
+        json.put("hr_second_pass_steps", 0);
+
+        // 高分辨率模式下的水平调整大小。该参数用于调整生成的图像的宽度。默认值为 `0`，表示不进行调整。
+        json.put("hr_resize_x", 0);
+
+        // 高分辨率模式下的垂直调整大小。该参数用于调整生成的图像的高度。默认值为 `0`，表示不进行调整。
+        json.put("hr_resize_y", 0);
+
+        // 用于生成的文本提示。可以提供一段文字描述或问题，以引导图像生成的方向。默认为空字符串。
+        json.put("prompt", "(child,little girl,toddler,3-years-old:1.5),(full body:1.25),(:3:1.3), (flower:1.2),(white_flower:1.2),(pink_flower:1.2),(cherry_blossoms:1.2),(fl_background:1.2),(lily_(flower):1.2),(daisy:1.2),(1girl:1.2),(branch:1.2),(hair_flower:1.2),(solo:1.1),(lotus:1.1),(petals:1.1),(hair_ornament:1.1),(long_hair:1.1),(spring_(season):1.1),(animal_ears),hydrangea,puffy_sleeves,ahoge,lily_pad,very_long_hair,snowflakes,fl_print,long_sleeves,flower_(symbol),plum_blossoms,looking_at_viewer,full_body,blush,standing,dress,butterfly,purple_flower,flower-shaped_pupils,closed_mouth,pink_ribbon,shoes,frills,_shoulders,bangs,white_legwear,paw_print,ribbon,water,holding_flower,detached_sleeves,neck_ribbon,socks,puffy_long_sleeves,pink_rose,cat_ears,eyebrows_visible_through_hair,brown_eyes,sleeves_past_wrists,white_hair,bug,pink_hair,white_dress,white_sleeves");
+
+        // 一个字符串数组，包含用于生成图像的风格模型的标识符或名称。可以提供一个或多个风格模型，API将根据提供的风格进行图像生成。
+        json.put("styles", new JSONArray(new String[]{}));
+
+        // 随机种子。该参数用于控制生成过程的随机性。不同的种子值会产生不同的图像结果。默认值为 `-1`，表示使用随机种子。
+        json.put("seed", -1);
+
+        // 子种子 (Subseed)。该参数用于控制生成过程中的子随机性。不同的子种子值会导致略微不同的图像生成结果。默认值为 `-1`，表示使用随机子种子。
+        json.put("subseed", -1);
+
+        // 子种子强度。该参数控制子种子的影响力。较高的值会增加子种子的影响，从而导致更大的图像变化。默认值为 `0`。
+        json.put("subseed_strength", 0);
+
+        // 调整大小的种子高度。该参数指定生成过程中用于调整大小的种子图像的高度。默认值为 `-1`，表示不使用调整大小的种子图像。
+        json.put("seed_resize_from_h", -1);
+
+        // 调整大小的种子宽度。该参数指定生成过程中用于调整大小的种子图像的宽度。默认值为 `-1`，表示不使用调整大小的种子图像。
+        json.put("seed_resize_from_w", -1);
+
+        // 采样器名称。该参数指定用于生成图像的采样器的名称或标识符。可以选择不同的采样器来获得不同的生成效果。默认值为 "string"。
+        json.put("sampler_name", null);
+
+        // 批量大小。该参数控制每次生成图像的批量大小。默认值为 `1`，表示每次生成一个图像。
+        json.put("batch_size", 1);
+
+        // 迭代次数。该参数指定生成过程的迭代次数。默认值为 `1`，表示只进行一次迭代。
+        json.put("n_iter", 1);
+
+        // 步数。该参数指定每个迭代步骤中生成器和判别器的更新次数。较大的值可能会增加图像生成的质量，但也会增加计算时间。默认值为 `50`。
+        json.put("steps", 20);
+
+        // 配置缩放。该参数控制生成过程中的配置缩放。较高的值可以产生更高分辨率的图像，但也会增加计算时间和资源消耗。默认值为 `7`。
+        json.put("cfg_scale", 7);
+
+        // 输出图像的宽度。默认值为 `512`。
+        json.put("width", 512);
+
+        // 输出图像的高度。默认值为 `512`。
+        json.put("height", 512);
+
+        // 是否修复图像中的面部。当设置为 `true` 时，API将尝试修复生成图像中的任何扭曲或损坏的面部。默认值为 `false`。
+        json.put("restore_faces", false);
+
+        // 是否启用分块渲染。当设置为 `true` 时，API将使用分块渲染技术来生成图像，从而减少资源消耗和计算时间。默认值为 `false`。
+        json.put("tiling", false);
+
+        // 是否保存样本图像。当设置为 `true` 时，API将保存生成过程中的样本图像。这可以用于调试或可视化目的。默认值为 `false`。
+        json.put("do_not_save_samples", false);
+
+        // 是否保存网格图像。当设置为 `true` 时，API将保存生成过程中的网格图像。这可以用于调试或可视化目的。默认值为 `false`。
+        json.put("do_not_save_grid", false);
+
+        // 用于生成的负面文本提示。可以提供一段负面的文字描述或问题，以避免生成特定的内容。默认为 "string"。
+        json.put("negative_prompt", "NG_DeepNegative_V1_75T, EasyNegativeV2, extra fingers, fewer fingers, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (worst quality, low quality:1.4), Negative2, (low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad composition, inaccurate eyes, extra digit,fewer digits, (extra arms:1.2), (bad-artist:0.6), bad-image-v2-39000");
+
+        // 未提供详细注释的部分：
+        json.put("eta", 0);
+        json.put("s_min_uncond", 0);
+        json.put("s_churn", 0);
+        json.put("s_tmax", 0);
+        json.put("s_tmin", 0);
+        json.put("s_noise", 1);
+        JSONObject overrideSettings = new JSONObject();
+        overrideSettings.put("sd_model_checkpoint", "cuteyukimixAdorable_midchapter3");
+        json.put("override_settings", overrideSettings);
+        json.put("override_settings_restore_afterwards", true);
+        JSONArray scriptArgsArray = new JSONArray(new String[]{});
+
+        json.put("script_args", scriptArgsArray);
+        json.put("sampler_index", "DPM++ SDE Karras");
+        json.put("script_name", null);
+        json.put("send_images", true);
+        json.put("save_images", false);
+        json.put("alwayson_scripts", new JSONObject());
+
+        // 获取屏幕的宽度和高度
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);  // 使用context来获取WindowManager
+        windowManager.getDefaultDisplay().getMetrics(displayMetrics);
+        int deviceWidth = displayMetrics.widthPixels;
+        int deviceHeight = displayMetrics.heightPixels;
+        // 计算缩放因子
+        float scaleFactor = 1f;
+        if (deviceWidth > deviceHeight) {
+            scaleFactor = 1000f / deviceWidth;
+        } else {
+            scaleFactor = 1000f / deviceHeight;
+        }
+        // 如果任何一个维度大于1000，重新计算宽度和高度
+        if (deviceWidth > 1000 || deviceHeight > 1000) {
+            deviceWidth = Math.round(deviceWidth * scaleFactor);
+            deviceHeight = Math.round(deviceHeight * scaleFactor);
+        }
+        // 设置图片的宽度和高度
+        json.put("width", deviceWidth);
+        json.put("height", deviceHeight);
+
+        return json;
     }
 
 }
