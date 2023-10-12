@@ -193,7 +193,7 @@ public class SD {
         json.put("hr_resize_y", 0);
 
         // 用于生成的文本提示。可以提供一段文字描述或问题，以引导图像生成的方向。默认为空字符串。
-        json.put("prompt", "(child,little girl,toddler,3-years-old:1.5),(full body:1.25),(:3:1.3), (flower:1.2),(white_flower:1.2),(pink_flower:1.2),(cherry_blossoms:1.2),(fl_background:1.2),(lily_(flower):1.2),(daisy:1.2),(1girl:1.2),(branch:1.2),(hair_flower:1.2),(solo:1.1),(lotus:1.1),(petals:1.1),(hair_ornament:1.1),(long_hair:1.1),(spring_(season):1.1),(animal_ears),hydrangea,puffy_sleeves,ahoge,lily_pad,very_long_hair,snowflakes,fl_print,long_sleeves,flower_(symbol),plum_blossoms,looking_at_viewer,full_body,blush,standing,dress,butterfly,purple_flower,flower-shaped_pupils,closed_mouth,pink_ribbon,shoes,frills,_shoulders,bangs,white_legwear,paw_print,ribbon,water,holding_flower,detached_sleeves,neck_ribbon,socks,puffy_long_sleeves,pink_rose,cat_ears,eyebrows_visible_through_hair,brown_eyes,sleeves_past_wrists,white_hair,bug,pink_hair,white_dress,white_sleeves");
+        json.put("prompt", "");
 
         // 一个字符串数组，包含用于生成图像的风格模型的标识符或名称。可以提供一个或多个风格模型，API将根据提供的风格进行图像生成。
         json.put("styles", new JSONArray(new String[]{}));
@@ -223,7 +223,7 @@ public class SD {
         json.put("n_iter", 1);
 
         // 步数。该参数指定每个迭代步骤中生成器和判别器的更新次数。较大的值可能会增加图像生成的质量，但也会增加计算时间。默认值为 `50`。
-        json.put("steps", 20);
+        json.put("steps", 30);
 
         // 配置缩放。该参数控制生成过程中的配置缩放。较高的值可以产生更高分辨率的图像，但也会增加计算时间和资源消耗。默认值为 `7`。
         json.put("cfg_scale", 7);
@@ -247,7 +247,7 @@ public class SD {
         json.put("do_not_save_grid", false);
 
         // 用于生成的负面文本提示。可以提供一段负面的文字描述或问题，以避免生成特定的内容。默认为 "string"。
-        json.put("negative_prompt", "NG_DeepNegative_V1_75T, EasyNegativeV2, extra fingers, fewer fingers, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (worst quality, low quality:1.4), Negative2, (low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad composition, inaccurate eyes, extra digit,fewer digits, (extra arms:1.2), (bad-artist:0.6), bad-image-v2-39000");
+        json.put("negative_prompt", "NG_DeepNegative_V1_75T, EasyNegative, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (worst quality, low quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad composition, inaccurate eyes, extra digit,fewer digits, (extra arms:1.2), (bad-artist:0.6), bad-image-v2-39000");
 
         // 未提供详细注释的部分：
         json.put("eta", 0);
@@ -258,6 +258,7 @@ public class SD {
         json.put("s_noise", 1);
         JSONObject overrideSettings = new JSONObject();
         overrideSettings.put("sd_model_checkpoint", "cuteyukimixAdorable_midchapter3.safetensors [0212c833dc]");
+        overrideSettings.put("sd_vae", "anything-v4.0.vae.pt");
         json.put("override_settings", overrideSettings);
         json.put("override_settings_restore_afterwards", true);
 
@@ -265,6 +266,7 @@ public class SD {
         json.put("script_args", scriptArgsArray);
         json.put("sampler_index", "DPM++ SDE Karras");
         json.put("script_name", null);
+        json.put("clip_skip", 2);
         json.put("send_images", true);
         json.put("save_images", false);
         json.put("alwayson_scripts", new JSONObject());
