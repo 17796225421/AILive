@@ -28,6 +28,7 @@ public class UI extends Activity {
     private Button cancelButton;
     private Button submitButton;
     private Button changeBgBtn;
+    private Button imageRecognitionBtn;
     private EditText askView;
     private TextView gptView;
     private GLSurfaceView live2DView;
@@ -36,6 +37,7 @@ public class UI extends Activity {
     private ASR asr;
     //    private SD sd;
     private Dalle3 dalle3;
+    private Vision vision;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
     @Override
@@ -70,6 +72,8 @@ public class UI extends Activity {
         dalle3 = new Dalle3(this);
         dalle3.setBackgroundImageListener(LAppDelegate.getInstance());
         dalle3.setupAutoImageSwitching();
+
+        Vision vision = new Vision(this);
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -109,6 +113,14 @@ public class UI extends Activity {
             @Override
             public void onClick(View view) {
 //                sd.fetchAndSetNewBackgroundImage();
+            }
+        });
+
+        imageRecognitionBtn = findViewById(R.id.image_recognition_btn);
+        imageRecognitionBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                vision.openURLInChrome();
             }
         });
 
