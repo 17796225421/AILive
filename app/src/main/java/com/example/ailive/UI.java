@@ -34,7 +34,7 @@ public class UI extends Activity {
     private Handler mHandler;
     private HandlerThread mHanderThread;
     private ASR asr;
-    private SD sd;
+//    private SD sd;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
 
     @Override
@@ -61,9 +61,9 @@ public class UI extends Activity {
         setButtonState(submitButton, true);
 
         changeBgBtn = findViewById(R.id.change_bg_btn);
-        sd = new SD(this);
-        sd.setBackgroundImageListener(LAppDelegate.getInstance());
-        sd.setupAutoImageSwitching();
+//        sd = new SD(this);
+//        sd.setBackgroundImageListener(LAppDelegate.getInstance());
+//        sd.setupAutoImageSwitching();
 
 
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -103,7 +103,7 @@ public class UI extends Activity {
         changeBgBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                sd.fetchAndSetNewBackgroundImage();
+//                sd.fetchAndSetNewBackgroundImage();
             }
         });
 
