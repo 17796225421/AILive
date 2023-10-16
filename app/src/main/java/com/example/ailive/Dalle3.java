@@ -11,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.net.Uri;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -33,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -66,25 +68,45 @@ public class Dalle3 {
             }
         }, 0, 10000);
     }
-
     private Bitmap randomSwitchImage() {
-        Bitmap bitmap = null;
+        List<File> validFiles = new ArrayList<>();
+
         File downloadDir = new File("/storage/emulated/0/Download");
         File[] files = downloadDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return file.getName().toLowerCase().endsWith(".png");
+                if (!file.getName().toLowerCase().endsWith(".png")) {
+                    return false;
+                }
+
+                BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+                return options.outWidth == 1024 && options.outHeight == 1024;
             }
         });
 
-        if (files != null && files.length > 0) {
-            int randomIndex = (int) (Math.random() * files.length);
-            File selectedFile = files[randomIndex];
-            bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
+        if (files != null && files.length > 1) {
+            Collections.addAll(validFiles, files);
         }
 
-        return bitmap;
+        if (validFiles.size() < 2) {
+            return null;
+        }
+
+        Collections.shuffle(validFiles); // Shuffle to get randomness
+
+        Bitmap firstBitmap = BitmapFactory.decodeFile(validFiles.get(0).getAbsolutePath());
+        Bitmap secondBitmap = BitmapFactory.decodeFile(validFiles.get(1).getAbsolutePath());
+
+        Bitmap result = Bitmap.createBitmap(1024, 2048, firstBitmap.getConfig());
+        Canvas canvas = new Canvas(result);
+        canvas.drawBitmap(firstBitmap, 0, 0, null);
+        canvas.drawBitmap(secondBitmap, 0, 1024, null);
+
+        return result;
     }
+
 
     public void openInChrome() {
         // Create an EditText widget for user input
