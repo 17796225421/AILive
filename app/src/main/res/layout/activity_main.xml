@@ -71,14 +71,6 @@
             android:layout_weight="1"
             android:text="图像生成" />
 
-        <!-- 切换背景 button -->
-        <Button
-            android:id="@+id/change_bg_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="切换背景" />
-
         <!-- 图像识别 button -->
         <Button
             android:id="@+id/image_recognition_btn"

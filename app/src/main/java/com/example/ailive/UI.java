@@ -1,13 +1,17 @@
 package com.example.ailive;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.opengl.GLSurfaceView;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -18,6 +22,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.alibaba.idst.nui.CommonUtils;
 import com.example.ailive.live2d.GLRenderer;
@@ -32,18 +38,19 @@ public class UI extends Activity {
     private Button startButton;
     private Button cancelButton;
     private Button submitButton;
-    private Button changeBgBtn;
     private Button imageRecognitionBtn;
     private EditText askView;
     private TextView gptView;
     private GLSurfaceView live2DView;
     private Handler mHandler;
     private HandlerThread mHanderThread;
+    private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1;
     private ASR asr;
     //    private SD sd;
     private Dalle3 dalle3;
     private Vision vision;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
+    private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
 
 
     @Override
@@ -77,7 +84,16 @@ public class UI extends Activity {
 
         dalle3 = new Dalle3(this);
         dalle3.setBackgroundImageListener(LAppDelegate.getInstance());
-        dalle3.setupAutoImageSwitching();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                // 如果没有 "All Files Access" 权限，则请求它
+                Intent intent = new Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+                startActivityForResult(intent, REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION);
+            } else {
+                // 如果已有权限，执行其他操作
+                dalle3.setupAutoImageSwitching();
+            }
+        }
 
         Vision vision = new Vision(this);
 
@@ -136,14 +152,6 @@ public class UI extends Activity {
             @Override
             public void onClick(View v) {
                 dalle3.openInChrome();
-            }
-        });
-
-        changeBgBtn = findViewById(R.id.change_bg_btn);
-        changeBgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                dalle3.openInPhoto();
             }
         });
 
@@ -287,15 +295,4 @@ public class UI extends Activity {
         return super.onTouchEvent(event);
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        try {
-            dalle3.onActivityResult(requestCode, resultCode, data);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
 }

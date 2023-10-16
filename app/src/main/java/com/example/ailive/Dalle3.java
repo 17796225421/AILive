@@ -68,25 +68,24 @@ public class Dalle3 {
     }
 
     private Bitmap randomSwitchImage() {
-
-        File directory = context.getExternalFilesDir(null);
-
-        // 获取PNG文件列表
-        File[] files = directory.listFiles(new FileFilter() {
+        Bitmap bitmap = null;
+        File downloadDir = new File("/storage/emulated/0/Download");
+        File[] files = downloadDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return file.getName().toLowerCase(Locale.getDefault()).endsWith(".png");
+                return file.getName().toLowerCase().endsWith(".png");
             }
         });
 
-        // 随机选择一个文件
-        int randomIndex = (int) (Math.random() * files.length);
-        File selectedFile = files[randomIndex];
-        Log.i("zhouzihong", selectedFile.getAbsolutePath());
-        // 将文件转换为Bitmap
-        Bitmap bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
+        if (files != null && files.length > 0) {
+            int randomIndex = (int) (Math.random() * files.length);
+            File selectedFile = files[randomIndex];
+            bitmap = BitmapFactory.decodeFile(selectedFile.getAbsolutePath());
+        }
+
         return bitmap;
     }
+
     public void openInChrome() {
         // Create an EditText widget for user input
         final EditText input = new EditText(context);
@@ -191,49 +190,6 @@ public class Dalle3 {
         return null;
     }
 
-    public void openInPhoto() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
-        ((Activity) context).startActivityForResult(intent, REQUEST_CODE_SELECT_PHOTOS);
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) throws IOException {
-        List<Bitmap> bitmapList = new ArrayList<>();
-        if (requestCode == REQUEST_CODE_SELECT_PHOTOS && resultCode == RESULT_OK) {
-            if (data.getClipData() != null) { // 多选的图片
-                int count = data.getClipData().getItemCount();
-                for (int i = 0; i < count; i++) {
-                    Uri uri = data.getClipData().getItemAt(i).getUri();
-                    Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-                    bitmapList.add(bitmap);
-                }
-            } else if (data.getData() != null) { // 单选的图片
-                Uri uri = data.getData();
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(context.getContentResolver(), uri);
-                bitmapList.add(bitmap);
-            }
-        }
-        for (Bitmap bitmap : bitmapList) {
-            String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(new Date());
-            String fileName = "output_" + timeStamp + ".png";
-            saveBitmapToFile(bitmap, fileName);
-        }
-    }
-
-    private void saveBitmapToFile(Bitmap bitmap, String fileName) {
-        File file = new File(context.getExternalFilesDir(null), fileName);
-
-        try {
-            FileOutputStream outStream = new FileOutputStream(file);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, outStream);
-            outStream.flush();
-            outStream.close();
-            Log.i("zhouzihong", "Image saved at: " + file.getAbsolutePath());
-        } catch (IOException e) {
-            e.printStackTrace();
-            Log.e("zhouzihong", "Error saving image: " + e.getMessage());
-        }
-    }
 
 }
 
