@@ -130,7 +130,7 @@ public class LAppSprite {
         GLES20.glUniform4f(colorLocation, spriteColor[0], spriteColor[1], spriteColor[2], spriteColor[3]);
 
         GLES20.glBindTexture(GL_TEXTURE_2D, textureId);
-        Log.i("zhouzihong", "textureId" + textureId);
+//        Log.i("zhouzihong", "textureId" + textureId);
         GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 4);
     }
 

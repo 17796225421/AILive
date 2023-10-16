@@ -25,6 +25,6 @@ public class Vision {
         intent.setPackage("com.android.chrome");
 
         // Check if the Chrome browser is installed
-            mContext.startActivity(intent);
+        mContext.startActivity(intent);
     }
 }

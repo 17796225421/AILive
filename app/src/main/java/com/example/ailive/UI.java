@@ -1,11 +1,13 @@
 package com.example.ailive;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.provider.MediaStore;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,12 +15,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
 import com.alibaba.idst.nui.CommonUtils;
 import com.example.ailive.live2d.GLRenderer;
 import com.example.ailive.live2d.LAppDelegate;
+
+import java.io.IOException;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -39,6 +44,7 @@ public class UI extends Activity {
     private Dalle3 dalle3;
     private Vision vision;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -63,7 +69,7 @@ public class UI extends Activity {
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
 
-        changeBgBtn = findViewById(R.id.change_bg_btn);
+//        changeBgBtn = findViewById(R.id.change_bg_btn);
 
 //        sd = new SD(this);
 //        sd.setBackgroundImageListener(LAppDelegate.getInstance());
@@ -109,18 +115,35 @@ public class UI extends Activity {
             }
         });
 
-        changeBgBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-//                sd.fetchAndSetNewBackgroundImage();
-            }
-        });
+//        changeBgBtn.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+////                sd.fetchAndSetNewBackgroundImage();
+//            }
+//        });
 
         imageRecognitionBtn = findViewById(R.id.image_recognition_btn);
         imageRecognitionBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 vision.openURLInChrome();
+            }
+        });
+
+        Button imageGenerationBtn = findViewById(R.id.image_generation_btn);
+
+        imageGenerationBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dalle3.openInChrome();
+            }
+        });
+
+        changeBgBtn = findViewById(R.id.change_bg_btn);
+        changeBgBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                dalle3.openInPhoto();
             }
         });
 
@@ -264,4 +287,15 @@ public class UI extends Activity {
         return super.onTouchEvent(event);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        try {
+            dalle3.onActivityResult(requestCode, resultCode, data);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
 }
