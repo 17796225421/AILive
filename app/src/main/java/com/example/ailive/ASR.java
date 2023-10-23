@@ -87,7 +87,8 @@ public class ASR implements INativeNuiCallback {
             "郭拉",
             "锅拉",
             "高子",
-            "钩子"
+            "钩子",
+            "停下来"
             // ... 其他可能的词
     );
 
@@ -198,7 +199,7 @@ public class ASR implements INativeNuiCallback {
         JSONObject nls_config = new JSONObject();
         nls_config.put("enable_intermediate_result", false);
         nls_config.put("disfluency", true);
-        nls_config.put("speech_noise_threshold", 0.9);
+        nls_config.put("speech_noise_threshold", 3.0);
         params.put("nls_config", nls_config);
         params.put("service_type", Constants.kServiceTypeSpeechTranscriber);
         return params.toString();
