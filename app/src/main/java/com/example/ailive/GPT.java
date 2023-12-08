@@ -3,9 +3,9 @@ package com.example.ailive;
 
 import android.content.Context;
 
-import com.example.ailive.token.AccessToken;
-
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -31,8 +31,8 @@ public class GPT implements Runnable {
         DONE
     }
 
-    private final String FAST_GPT_API_ENDPOINT = "https://fastgpt.run/api/v1/chat/completions";
-    private final String FAST_GPT_API_KEY = "fastgpt-4LYNv2qsOd19hJd34i83lkctaGfLcXdsI6VEr";
+    private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
+    private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
 
 
     GPT(UI ui, Context context) {
@@ -52,45 +52,57 @@ public class GPT implements Runnable {
     @Override
     public void run() {
         try {
-            URL url = new URL(FAST_GPT_API_ENDPOINT);
+            URL url = new URL(GPT_API_ENDPOINT);
+            // 创建和配置 HTTP 连接
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Authorization", "Bearer " + FAST_GPT_API_KEY);
+            conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
             conn.setDoOutput(true);
 
+            // 构建 JSON 请求体
             String jsonInputString = "{"
-                    + "\"chatId\":\"111\","
-                    + "\"stream\":true,"
-                    + "\"detail\": true,"
-                    + "\"variables\": { \"cTime\": \"2022/2/2 22:22\" },"
-                    + "\"messages\": [{ \"content\": \"" + asrText + "\", \"role\": \"user\" }]"
+                    + "\"model\": \"GPT-4-1106-preview\","
+                    + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + asrText + "\" }],"
+                    + "\"stream\": true" // 添加这一行来启用流式传输
                     + "}";
 
+            // 发送请求
             try (OutputStream os = conn.getOutputStream()) {
                 byte[] input = jsonInputString.getBytes("utf-8");
                 os.write(input, 0, input.length);
             }
-
+            // 读取响应
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 String line;
                 while ((line = br.readLine()) != null && !Thread.currentThread().isInterrupted()) {
-                    if (!line.startsWith("event: ")) continue;
+                    if(line.isEmpty()){
+                        continue;
+                    }
+                    // 解析 JSON 数据
+                    String jsonData = line.substring("data: ".length()).trim();
+                    JSONObject jsonObject = new JSONObject(jsonData);
+                    JSONArray choices = jsonObject.getJSONArray("choices");
+                    JSONObject choice = choices.getJSONObject(0);
+                    JSONObject delta = choice.getJSONObject("delta");
 
-                    String eventType = line.substring("event: ".length()).trim();
-                    String dataLine = br.readLine();
-
-                    if (dataLine == null || !dataLine.startsWith("data: ")) continue;
-                    String jsonData = dataLine.substring("data: ".length()).trim();
-
-                    if (jsonData.contains("DONE")) {
+                    if (delta.has("content")) {
+                        String content = delta.getString("content");
+                        if(content.isEmpty()){
+                            continue;
+                        }
+                        // 将内容添加到累积文本
+                        accumulatedText.append(content);
+                        segmentText.append(content);
+                        ui.showText(ui.getGptView(), "GPT：" + accumulatedText); // 显示累积的文本
+                    }else{
                         processSegmentText();
                         segmentText.setLength(0);
                         accumulatedText.setLength(0);
                         break;
                     }
 
-                    handleEvent(eventType, jsonData);
+                    handleAnswerEvent(jsonData);
                 }
             }
 
@@ -100,36 +112,7 @@ public class GPT implements Runnable {
         }
     }
 
-    private void handleEvent(String eventType, String jsonData) throws JSONException {
-        switch (eventType) {
-            case "answer":
-                handleAnswerEvent(jsonData);
-                break;
-            case "appStreamResponse":
-                // TODO: 添加处理appStreamResponse的逻辑
-                break;
-        }
-    }
-
-    private void handleAnswerEvent(String jsonData) throws JSONException {
-        org.json.JSONObject jsonResponse = new org.json.JSONObject(jsonData);
-        if (!jsonResponse.has("choices")) {
-            return;
-        }
-
-        org.json.JSONArray choicesArray = jsonResponse.getJSONArray("choices");
-        if (choicesArray.length() == 0) {
-            return;
-        }
-
-        org.json.JSONObject choiceObject = choicesArray.getJSONObject(0);
-        if (!choiceObject.has("delta") || !choiceObject.getJSONObject("delta").has("content")) {
-            return;
-        }
-        String content = choiceObject.getJSONObject("delta").getString("content");
-        accumulatedText.append(content);
-        ui.showText(ui.getGptView(), "GPT：" + accumulatedText);
-        segmentText.append(content);
+    private void handleAnswerEvent(String content) throws JSONException {
         if (segmentStatus != SegmentProcessingStatus.DONE) {
             handleFirstSegment(segmentText);
         } else {
