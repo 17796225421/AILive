@@ -65,37 +65,15 @@ public class ASR implements INativeNuiCallback {
         token = accessToken.getToken();
     }
 
-    private static final List<String> STOP_COMMANDS = Arrays.asList(
-            "勾勒",
-            "够了",
-            "狗了",
-            "勾了",
-            "狗乐",
-            "构乐",
-            "购乐",
-            "勾乐",
-            "狗拉",
-            "够拉",
-            "勾拉",
-            "过了",
-            "国乐",
-            "锅了",
-            "郭乐",
-            "果乐",
-            "国拉",
-            "过拉",
-            "郭拉",
-            "锅拉",
-            "高子",
-            "钩子",
-            "停下来"
+    private static final List<String> STOP_COMMANDS = Arrays.asList("勾勒", "够了", "狗了", "勾了", "狗乐", "构乐", "购乐", "勾乐", "狗拉", "够拉", "勾拉", "过了", "国乐", "锅了", "郭乐", "果乐", "国拉", "过拉", "郭拉", "锅拉", "高子", "钩子", "停下来", "停下", "听下", "挺下", "停停停", "停下", "听下", "挺下", "亭下", "庭下", "廷下", "艇下", "葶下", "汀下", "铤下", "蜓下", "町下", "婷下", "停车", "听车", "挺车", "亭车", "庭车", "廷车", "艇车", "葶车", "汀车", "铤车", "蜓车", "町车", "婷车", "停步", "听步", "挺步", "亭步", "庭步", "廷步", "艇步", "葶步", "汀步", "铤步", "蜓步", "町步", "婷步"
+
+
             // ... 其他可能的词
     );
 
     @SuppressLint("MissingPermission")
     public void doInit() {
-        mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, WAVE_FRAM_SIZE * 4000);
+        mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, WAVE_FRAM_SIZE * 4000);
 
         String workspace = CommonUtils.getModelPath(context);
 
@@ -244,6 +222,7 @@ public class ASR implements INativeNuiCallback {
         nui_instance.stopDialog();
         gpt.onStop();
     }
+
     public GPT getGpt() {
         return gpt;
     }
