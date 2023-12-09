@@ -12,14 +12,12 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -172,9 +170,28 @@ public class UI extends Activity {
         imageGenerationBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dalle3.openInChrome();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            dalle3.callImageGenerateApi();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            // 可以在这里处理异常，例如更新UI通知用户错误
+                            // 注意：因为这不是UI线程，所以任何UI操作需要用runOnUiThread来执行
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    // 在这里更新UI，例如显示一个错误消息
+                                    Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+                }).start();
             }
         });
+
 
         mHanderThread = new HandlerThread("process_thread");
         mHanderThread.start();

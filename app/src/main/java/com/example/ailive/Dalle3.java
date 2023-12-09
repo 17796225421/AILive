@@ -1,7 +1,5 @@
 package com.example.ailive;
 
-import static android.app.Activity.RESULT_OK;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ClipData;
@@ -13,37 +11,37 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.net.Uri;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.ailive.live2d.BackgroundImageListener;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class Dalle3 {
     Context context;
     private static final int REQUEST_CODE_SELECT_PHOTOS = 1;
+
+
+    private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
+    private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
 
 
     private BackgroundImageListener listener;
@@ -66,8 +64,9 @@ public class Dalle3 {
                     listener.onNewBackgroundImage(newImage);
                 }
             }
-        }, 0, 10000);
+        }, 0, 1 * 1000);
     }
+
     private Bitmap randomSwitchImage() {
         List<File> validFiles = new ArrayList<>();
 
@@ -108,7 +107,55 @@ public class Dalle3 {
     }
 
 
-    public void openInChrome() {
+    public void callImageGenerateApi() throws IOException {
+        // 利用gpt根据上下文生成合成图片的prompt
+        URL url = new URL(GPT_API_ENDPOINT);
+        // 创建和配置 HTTP 连接
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
+        conn.setDoOutput(true);
+        String generateImageText="根据当前上下文，提供符合当前场景的prompt。";
+        // 构建 JSON 请求体
+        String jsonInputString = "{"
+                + "\"model\": \"GPT-4-1106-preview\","
+                + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + generateImageText + "\" }]"
+                + "}";
+        try(OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        // 读取响应
+        try(BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            String jsonResponse = response.toString();
+
+            try {
+                JSONObject obj = new JSONObject(jsonResponse);
+                JSONArray choices = obj.getJSONArray("choices");
+                if (choices.length() > 0) {
+                    JSONObject firstChoice = choices.getJSONObject(0);
+                    if (firstChoice.has("message") && firstChoice.getJSONObject("message").has("content")) {
+                        String content = firstChoice.getJSONObject("message").getString("content");
+                        System.out.println(content);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 处理异常，例如打印错误日志
+            }
+        }
+        // 弹窗，将合成图片的prompt展示出来，可修改
+        // 点击发送后调用合成图片api
+        // 生成图片后，弹窗展示图片，可保存到手机
+
         // Create an EditText widget for user input
         final EditText input = new EditText(context);
         input.setHint("请输入内容");
@@ -166,8 +213,8 @@ public class Dalle3 {
 
 
     private String processWithGPT(String input) throws IOException, JSONException {
-        String 约束= "";
-        String finalInput="结合我们之前的对话内容，结合关键词"+input+"，在"+约束+"约束下，生成绘画prompt，";
+        String 约束 = "";
+        String finalInput = "结合我们之前的对话内容，结合关键词" + input + "，在" + 约束 + "约束下，生成绘画prompt，";
 
 
         String FAST_GPT_API_ENDPOINT = "https://fastgpt.run/api/v1/chat/completions";
