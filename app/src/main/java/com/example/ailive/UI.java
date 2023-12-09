@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioManager;
+import android.media.MediaScannerConnection;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +23,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,7 +35,15 @@ import com.alibaba.idst.nui.CommonUtils;
 import com.example.ailive.live2d.GLRenderer;
 import com.example.ailive.live2d.LAppDelegate;
 
+import org.json.JSONException;
+
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -117,7 +129,7 @@ public class UI extends Activity {
                 if (checkSelfPermission("android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED) {
                     // 如果没有麦克风权限，请求权限
                     requestPermissions(new String[]{"android.permission.RECORD_AUDIO"}, REQUEST_MICROPHONE_PERMISSION);
-                }else {
+                } else {
                     // 启动蓝牙SCO
                     AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
                     if (audioManager != null) {
@@ -200,7 +212,26 @@ public class UI extends Activity {
                                                         public void run() {
                                                             // 执行网络操作
                                                             // ...
-                                                            dalle3.callImageGenerateApi(modifiedPrompt);
+                                                            try {
+                                                                String imageUrl = dalle3.callImageGenerateApi(modifiedPrompt);
+                                                                // 在新线程中下载图片
+
+                                                                Bitmap bitmap = downloadImage(imageUrl);
+
+                                                                // 在主线程中更新UI
+                                                                runOnUiThread(new Runnable() {
+                                                                    @Override
+                                                                    public void run() {
+                                                                        showImageDialog(bitmap);
+                                                                    }
+                                                                });
+
+
+                                                            } catch (IOException e) {
+                                                                throw new RuntimeException(e);
+                                                            } catch (JSONException e) {
+                                                                throw new RuntimeException(e);
+                                                            }
                                                         }
                                                     }).start();
                                                 }
@@ -222,7 +253,6 @@ public class UI extends Activity {
                 }).start();
             }
         });
-
 
 
         mHanderThread = new HandlerThread("process_thread");
@@ -365,4 +395,49 @@ public class UI extends Activity {
         return super.onTouchEvent(event);
     }
 
+    private Bitmap downloadImage(String imageUrl) throws IOException {
+        URL url = new URL(imageUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoInput(true);
+        connection.connect();
+        InputStream input = connection.getInputStream();
+        return BitmapFactory.decodeStream(input);
+    }
+
+    private void showImageDialog(Bitmap bitmap) {
+        AlertDialog.Builder imageDialog = new AlertDialog.Builder(UI.this);
+        ImageView imageView = new ImageView(UI.this);
+        imageView.setImageBitmap(bitmap);
+        imageDialog.setView(imageView);
+
+        imageDialog.setPositiveButton("保存", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // 保存图片到设备的下载文件夹
+                saveImageToDownloads(bitmap);
+            }
+        });
+
+        imageDialog.setNegativeButton("取消", null);
+        imageDialog.show();
+    }
+
+    private void saveImageToDownloads(Bitmap bitmap) {
+        String imageFileName = "JPEG_" + System.currentTimeMillis() + ".jpg";
+        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+        if (!storageDir.exists()) {
+            storageDir.mkdirs();
+        }
+        File imageFile = new File(storageDir, imageFileName);
+        try {
+            OutputStream fOut = new FileOutputStream(imageFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
+            fOut.close();
+
+            // 添加到媒体库
+            MediaScannerConnection.scanFile(this, new String[]{imageFile.toString()}, null, null);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

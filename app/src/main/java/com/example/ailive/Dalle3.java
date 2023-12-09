@@ -211,57 +211,33 @@ public class Dalle3 {
     }
 
 
-    public void callImageGenerateApi(String prompt) {
+    public String callImageGenerateApi(String prompt) throws IOException, JSONException {
         OkHttpClient client = new OkHttpClient();
 
         JSONObject jsonObject = new JSONObject();
-        try {
-            jsonObject.put("prompt", prompt);  // 设置您的提示
-            jsonObject.put("n", 1);                           // 生成的图像数量
-            jsonObject.put("size", "1024x1024");              // 图像尺寸
-            jsonObject.put("model","dall-e-3");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        jsonObject.put("prompt", prompt);
+        jsonObject.put("n", 1);
+        jsonObject.put("size", "1024x1024");
+        jsonObject.put("model", "dall-e-3");
 
         RequestBody body = RequestBody.create(jsonObject.toString(), MediaType.parse("application/json"));
         Request request = new Request.Builder()
-                .url("https://chatapi.onechat.fun/v1/images/generations")  // 正确的 API URL
-                .header("Authorization", "Bearer sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6")       // 使用您的 API 密钥
+                .url("https://chatapi.onechat.fun/v1/images/generations")
+                .header("Authorization", "Bearer sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6")
                 .post(body)
                 .build();
 
-        client.newCall(request).enqueue(new Callback() {
-            @Override
-            public void onFailure(@NotNull Call call, @NotNull IOException e) {
-                e.printStackTrace();
-                // 在这里处理请求失败的情况
+        Response response = client.newCall(request).execute();
+        if (response.isSuccessful() && response.body() != null) {
+            String responseData = response.body().string();
+            JSONObject jsonResponse = new JSONObject(responseData);
+            JSONArray dataArray = jsonResponse.getJSONArray("data");
+            if (dataArray.length() > 0) {
+                JSONObject imageObject = dataArray.getJSONObject(0);
+                return imageObject.getString("url");
             }
-
-            @Override
-            public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
-                if (response.isSuccessful() && response.body() != null) {
-                    String responseData = response.body().string();
-
-                    try {
-                        JSONObject jsonObject = new JSONObject(responseData);
-                        JSONArray dataArray = jsonObject.getJSONArray("data");
-
-                        for (int i = 0; i < dataArray.length(); i++) {
-                            JSONObject imageObject = dataArray.getJSONObject(i);
-                            String imageUrl = imageObject.getString("url");
-                            System.out.println("Image URL: " + imageUrl);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                        // 在这里处理 JSON 解析错误
-                    }
-                } else {
-                    // 处理错误响应，如 4xx 或 5xx 状态码
-                }
-            }
-        });
-
+        }
+        return null;
     }
 }
 
