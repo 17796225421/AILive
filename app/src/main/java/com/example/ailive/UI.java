@@ -414,7 +414,7 @@ public class UI extends Activity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 // 保存图片到设备的下载文件夹
-                saveImageToDownloads(bitmap);
+                saveImageToInternalStorage(bitmap);
             }
         });
 
@@ -422,22 +422,24 @@ public class UI extends Activity {
         imageDialog.show();
     }
 
-    private void saveImageToDownloads(Bitmap bitmap) {
+    private void saveImageToInternalStorage(Bitmap bitmap) {
         String imageFileName = "JPEG_" + System.currentTimeMillis() + ".jpg";
-        File storageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
+
+        // 获取内部存储的background目录
+        File storageDir = new File(getFilesDir(), "background");
         if (!storageDir.exists()) {
             storageDir.mkdirs();
         }
+
+        // 创建图片文件
         File imageFile = new File(storageDir, imageFileName);
         try {
             OutputStream fOut = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fOut);
             fOut.close();
-
-            // 添加到媒体库
-            MediaScannerConnection.scanFile(this, new String[]{imageFile.toString()}, null, null);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }

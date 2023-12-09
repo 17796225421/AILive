@@ -34,6 +34,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
@@ -78,11 +79,13 @@ public class Dalle3 {
     private Bitmap randomSwitchImage() {
         List<File> validFiles = new ArrayList<>();
 
-        File downloadDir = new File("/storage/emulated/0/Download");
-        File[] files = downloadDir.listFiles(new FileFilter() {
+        // 修改为从内部存储的 "background" 文件夹获取
+        File storageDir = new File(context.getFilesDir(), "background");
+        File[] files = storageDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                if (!file.getName().toLowerCase().endsWith(".png")) {
+                // 检查文件是否以 .jpg 结尾
+                if (!file.getName().toLowerCase().endsWith(".jpg")) {
                     return false;
                 }
 
@@ -212,7 +215,11 @@ public class Dalle3 {
 
 
     public String callImageGenerateApi(String prompt) throws IOException, JSONException {
-        OkHttpClient client = new OkHttpClient();
+        OkHttpClient client = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS) // 设置连接超时时间
+                .readTimeout(30, TimeUnit.SECONDS)    // 设置读取超时时间
+                .writeTimeout(30, TimeUnit.SECONDS)   // 设置写入超时时间
+                .build();
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("prompt", prompt);
