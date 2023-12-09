@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -64,7 +63,7 @@ public class Dalle3 {
                     listener.onNewBackgroundImage(newImage);
                 }
             }
-        }, 0, 1 * 1000);
+        }, 0, 10 * 1000);
     }
 
     private Bitmap randomSwitchImage() {
@@ -107,7 +106,7 @@ public class Dalle3 {
     }
 
 
-    public void callImageGenerateApi() throws IOException {
+    public String getImageGeneratePrompt() throws IOException {
         // 利用gpt根据上下文生成合成图片的prompt
         URL url = new URL(GPT_API_ENDPOINT);
         // 创建和配置 HTTP 连接
@@ -126,7 +125,7 @@ public class Dalle3 {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);
         }
-
+        String imageGeneratePrompt="";
         // 读取响应
         try(BufferedReader br = new BufferedReader(
                 new InputStreamReader(conn.getInputStream(), "utf-8"))) {
@@ -136,7 +135,6 @@ public class Dalle3 {
                 response.append(responseLine.trim());
             }
             String jsonResponse = response.toString();
-
             try {
                 JSONObject obj = new JSONObject(jsonResponse);
                 JSONArray choices = obj.getJSONArray("choices");
@@ -144,7 +142,7 @@ public class Dalle3 {
                     JSONObject firstChoice = choices.getJSONObject(0);
                     if (firstChoice.has("message") && firstChoice.getJSONObject("message").has("content")) {
                         String content = firstChoice.getJSONObject("message").getString("content");
-                        System.out.println(content);
+                        imageGeneratePrompt=content;
                     }
                 }
             } catch (Exception e) {
@@ -152,63 +150,7 @@ public class Dalle3 {
                 // 处理异常，例如打印错误日志
             }
         }
-        // 弹窗，将合成图片的prompt展示出来，可修改
-        // 点击发送后调用合成图片api
-        // 生成图片后，弹窗展示图片，可保存到手机
-
-        // Create an EditText widget for user input
-        final EditText input = new EditText(context);
-        input.setHint("请输入内容");
-
-        // Create an AlertDialog to get user input
-        new AlertDialog.Builder(context)
-                .setView(input)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        final String userInput = input.getText().toString();
-
-                        // Start a new thread for the network request
-                        new Thread(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    final String processedText = processWithGPT(userInput);
-
-                                    // Return to the main thread to update the UI
-                                    ((Activity) context).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            // Copy the processed text to clipboard
-                                            ClipboardManager clipboard = (ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
-                                            ClipData clip = ClipData.newPlainText("label", processedText);
-                                            if (clipboard != null) {
-                                                clipboard.setPrimaryClip(clip);
-                                            }
-
-                                            // Open the URL in Chrome
-                                            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://chat.openai.com/?model=gpt-4-dalle"));
-                                            intent.setPackage("com.android.chrome");
-                                            context.startActivity(intent);
-                                        }
-                                    });
-
-                                } catch (final IOException e) {
-                                    // Return to the main thread to handle the exception
-                                    ((Activity) context).runOnUiThread(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Toast.makeText(context, "Error processing input: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                                        }
-                                    });
-                                } catch (JSONException e) {
-                                    throw new RuntimeException(e);
-                                }
-                            }
-                        }).start();
-                    }
-                })
-                .setNegativeButton("取消", null)
-                .show();
+        return imageGeneratePrompt;
     }
 
 

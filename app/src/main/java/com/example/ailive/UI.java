@@ -2,7 +2,9 @@ package com.example.ailive;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
@@ -174,15 +176,43 @@ public class UI extends Activity {
                     @Override
                     public void run() {
                         try {
-                            dalle3.callImageGenerateApi();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            // 可以在这里处理异常，例如更新UI通知用户错误
-                            // 注意：因为这不是UI线程，所以任何UI操作需要用runOnUiThread来执行
+                            String imageGeneratePrompt = dalle3.getImageGeneratePrompt();
+                            // 切换回主线程来处理UI
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    // 在这里更新UI，例如显示一个错误消息
+                                    // 创建 EditText 并设置预先填充内容
+                                    final EditText input = new EditText(UI.this);
+                                    input.setText(imageGeneratePrompt);
+
+                                    // 创建并显示 AlertDialog
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(UI.this);
+                                    builder.setTitle("Generated Prompt")
+                                            .setView(input) // 将 EditText 设置为对话框视图
+                                            .setPositiveButton("提交", new DialogInterface.OnClickListener() {
+                                                @Override
+                                                public void onClick(DialogInterface dialog, int which) {
+                                                    String modifiedPrompt = input.getText().toString();
+                                                    // 在这里执行网络操作，使用 modifiedPrompt
+                                                    // 注意：网络操作应在新的线程中进行
+                                                    new Thread(new Runnable() {
+                                                        @Override
+                                                        public void run() {
+                                                            // 执行网络操作
+                                                            // ...
+                                                        }
+                                                    }).start();
+                                                }
+                                            })
+                                            .setNegativeButton("取消", null)
+                                            .show();
+                                }
+                            });
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
                                     Toast.makeText(getApplicationContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                                 }
                             });
@@ -191,6 +221,7 @@ public class UI extends Activity {
                 }).start();
             }
         });
+
 
 
         mHanderThread = new HandlerThread("process_thread");
