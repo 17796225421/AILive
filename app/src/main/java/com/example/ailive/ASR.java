@@ -94,7 +94,7 @@ public class ASR implements INativeNuiCallback {
 
     @SuppressLint("MissingPermission")
     public void doInit() {
-        mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, SAMPLE_RATE,
+        mAudioRecorder = new AudioRecord(MediaRecorder.AudioSource.VOICE_RECOGNITION, SAMPLE_RATE,
                 AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT, WAVE_FRAM_SIZE * 4000);
 
         String workspace = CommonUtils.getModelPath(context);

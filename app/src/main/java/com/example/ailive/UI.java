@@ -2,8 +2,10 @@ package com.example.ailive;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.opengl.GLSurfaceView;
 import android.os.Build;
 import android.os.Bundle;
@@ -45,6 +47,8 @@ public class UI extends Activity {
     private Handler mHandler;
     private HandlerThread mHanderThread;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1;
+    private static final int REQUEST_BLUETOOTH_PERMISSIONS = 1;
+
     private ASR asr;
     //    private SD sd;
     private Dalle3 dalle3;
@@ -95,6 +99,16 @@ public class UI extends Activity {
             }
         }
 
+        // 检查是否已经有蓝牙权限
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED ||
+                ContextCompat.checkSelfPermission(this, Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+
+            // 没有蓝牙权限，向用户请求
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN},
+                    REQUEST_BLUETOOTH_PERMISSIONS);
+        }
+
         Vision vision = new Vision(this);
 
         startButton.setOnClickListener(new View.OnClickListener() {
@@ -103,6 +117,13 @@ public class UI extends Activity {
                 if (checkSelfPermission("android.permission.RECORD_AUDIO") != PackageManager.PERMISSION_GRANTED) {
                     // 如果没有麦克风权限，请求权限
                     requestPermissions(new String[]{"android.permission.RECORD_AUDIO"}, REQUEST_MICROPHONE_PERMISSION);
+                }else {
+                    // 启动蓝牙SCO
+                    AudioManager audioManager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                    if (audioManager != null) {
+                        audioManager.startBluetoothSco();
+                        audioManager.setBluetoothScoOn(true);
+                    }
                 }
                 setButtonState(startButton, false);
                 setButtonState(cancelButton, true);
