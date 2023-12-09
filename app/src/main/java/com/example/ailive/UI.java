@@ -200,6 +200,7 @@ public class UI extends Activity {
                                                         public void run() {
                                                             // 执行网络操作
                                                             // ...
+                                                            dalle3.callImageGenerateApi(modifiedPrompt);
                                                         }
                                                     }).start();
                                                 }
