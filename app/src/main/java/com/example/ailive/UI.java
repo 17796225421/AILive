@@ -274,6 +274,19 @@ public class UI extends Activity {
             }
         });
 
+        // 获取包含 GridView 和控制按钮的容器
+        LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
+        // 取消按钮的点击事件
+        Button cancelButton = findViewById(R.id.background_cancel);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // 隐藏整个容器，包括 GridView 和所有控制按钮
+                gridViewContainer.setVisibility(View.GONE);
+            }
+        });
+
+
         mHanderThread = new HandlerThread("process_thread");
         mHanderThread.start();
         mHandler = new Handler(mHanderThread.getLooper());
