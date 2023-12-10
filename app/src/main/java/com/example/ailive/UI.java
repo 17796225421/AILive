@@ -74,7 +74,7 @@ public class UI extends Activity {
     private Vision vision;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
     private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
-
+    private ImageAdapter imageAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -268,7 +268,7 @@ public class UI extends Activity {
                 LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
                 GridView gridView = findViewById(R.id.grid_view);
                 List<String> imagePaths = loadImagePaths(); // 获取图片路径列表
-                ImageAdapter imageAdapter = new ImageAdapter(UI.this, imagePaths);
+                imageAdapter = new ImageAdapter(UI.this, imagePaths);
                 gridView.setAdapter(imageAdapter);
                 gridViewContainer.setVisibility(View.VISIBLE); // 显示 GridView 和按钮
             }
@@ -283,6 +283,13 @@ public class UI extends Activity {
             public void onClick(View v) {
                 // 隐藏整个容器，包括 GridView 和所有控制按钮
                 gridViewContainer.setVisibility(View.GONE);
+            }
+        });
+        Button deleteButton = findViewById(R.id.button_delete);
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                imageAdapter.deleteSelectedItems();
             }
         });
 
@@ -531,6 +538,28 @@ public class UI extends Activity {
         }
         public SparseBooleanArray getSelectedItems() {
             return selectedItems;
+        }
+
+        public void deleteSelectedItems() {
+            // 遍历 selectedItems 来找到并删除选中的图片
+            for (int i = selectedItems.size() - 1; i >= 0; i--) {
+                if (selectedItems.valueAt(i)) {
+                    int position = selectedItems.keyAt(i);
+                    String imagePath = imagePaths.get(position);
+
+                    File file = new File(imagePath);
+                    if (file.delete()) {
+                        // 如果文件删除成功，则从列表中移除
+                        imagePaths.remove(position);
+                    }
+
+                    // 清除选中状态
+                    selectedItems.delete(position);
+                }
+            }
+
+            // 通知数据集改变
+            notifyDataSetChanged();
         }
 
     }
