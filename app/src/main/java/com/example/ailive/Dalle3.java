@@ -51,6 +51,10 @@ public class Dalle3 {
     Context context;
     private static final int REQUEST_CODE_SELECT_PHOTOS = 1;
 
+    public Map<String, Integer> getImageWeights() {
+        return imageWeights;
+    }
+
     private Map<String, Integer> imageWeights = new HashMap<>();
 
     private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";

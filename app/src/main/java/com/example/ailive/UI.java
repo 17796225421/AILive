@@ -50,6 +50,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 // 1. UI 类
@@ -501,6 +503,13 @@ public class UI extends Activity {
 
         public ImageAdapter(Context context, List<String> imagePaths) {
             this.context = context;
+            Collections.sort(imagePaths, new Comparator<String>() {
+                @Override
+                public int compare(String imagePath1, String imagePath2) {
+                    return Integer.compare(getImageWeight(imagePath2),
+                            getImageWeight(imagePath1));
+                }
+            });
             this.imagePaths = imagePaths;
         }
 
@@ -575,7 +584,9 @@ public class UI extends Activity {
             // 通知数据集改变
             notifyDataSetChanged();
         }
-
+        public int getImageWeight(String imagePath) {
+            return dalle3.getImageWeights().getOrDefault(imagePath, 1); // 默认权重为 1
+        }
     }
 
     private List<String> loadImagePaths() {
