@@ -77,7 +77,7 @@ public class Dalle3 {
                     listener.onNewBackgroundImage(newImage);
                 }
             }
-        }, 0, 10 * 1000);
+        }, 0, 1 * 1000);
     }
 
     private Bitmap randomSwitchImage() {
@@ -119,8 +119,14 @@ public class Dalle3 {
 
         Collections.shuffle(weightedList); // Shuffle to get randomness
 
+        // 选择两张图片
         Bitmap firstBitmap = BitmapFactory.decodeFile(weightedList.get(0).getAbsolutePath());
         Bitmap secondBitmap = BitmapFactory.decodeFile(weightedList.get(1).getAbsolutePath());
+
+        // 降低这两张图片的权重
+        decreaseImageWeight(weightedList.get(0).getAbsolutePath());
+        decreaseImageWeight(weightedList.get(1).getAbsolutePath());
+
 
         Bitmap result = Bitmap.createBitmap(1024, 2048, firstBitmap.getConfig());
         Canvas canvas = new Canvas(result);
@@ -140,19 +146,19 @@ public class Dalle3 {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
         conn.setDoOutput(true);
-        String generateImageText="根据当前上下文，提供符合当前场景的prompt。";
+        String generateImageText = "根据当前上下文，提供符合当前场景的prompt。";
         // 构建 JSON 请求体
         String jsonInputString = "{"
                 + "\"model\": \"GPT-4-1106-preview\","
                 + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + generateImageText + "\" }]"
                 + "}";
-        try(OutputStream os = conn.getOutputStream()) {
+        try (OutputStream os = conn.getOutputStream()) {
             byte[] input = jsonInputString.getBytes("utf-8");
             os.write(input, 0, input.length);
         }
-        String imageGeneratePrompt="";
+        String imageGeneratePrompt = "";
         // 读取响应
-        try(BufferedReader br = new BufferedReader(
+        try (BufferedReader br = new BufferedReader(
                 new InputStreamReader(conn.getInputStream(), "utf-8"))) {
             StringBuilder response = new StringBuilder();
             String responseLine = null;
@@ -167,7 +173,7 @@ public class Dalle3 {
                     JSONObject firstChoice = choices.getJSONObject(0);
                     if (firstChoice.has("message") && firstChoice.getJSONObject("message").has("content")) {
                         String content = firstChoice.getJSONObject("message").getString("content");
-                        imageGeneratePrompt=content;
+                        imageGeneratePrompt = content;
                     }
                 }
             } catch (Exception e) {
@@ -271,6 +277,20 @@ public class Dalle3 {
             imageWeights.put(imagePath, 2);
         }
         Log.i("imageWeight", imagePath + ":" + imageWeights.get(imagePath));
+    }
+
+    public void decreaseImageWeight(String imagePath) {
+        Integer currentWeight = imageWeights.get(imagePath);
+        if (currentWeight != null && currentWeight > 2) {
+            // 找到比当前图片权重小的最大权重
+            int minHigherWeight = imageWeights.values().stream()
+                    .filter(weight -> weight < currentWeight)
+                    .max(Integer::compare)
+                    .orElse(1);
+
+            // 更新权重，确保不低于 minHigherWeight
+            imageWeights.put(imagePath, Math.max(minHigherWeight + 1, currentWeight - 1));
+        }
     }
 }
 
