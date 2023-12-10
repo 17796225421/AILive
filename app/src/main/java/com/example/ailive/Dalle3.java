@@ -81,7 +81,7 @@ public class Dalle3 {
                     listener.onNewBackgroundImage(newImage);
                 }
             }
-        }, 0, 1 * 1000);
+        }, 0, 10 * 1000);
     }
 
     private Bitmap randomSwitchImage() {
