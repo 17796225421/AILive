@@ -208,7 +208,7 @@ public class UI extends Activity {
 
                                     // 创建并显示 AlertDialog
                                     AlertDialog.Builder builder = new AlertDialog.Builder(UI.this);
-                                    builder.setTitle("Generated Prompt")
+                                    builder.setTitle("Generated Prompt.txt")
                                             .setView(input) // 将 EditText 设置为对话框视图
                                             .setPositiveButton("提交", new DialogInterface.OnClickListener() {
                                                 @Override
