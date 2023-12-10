@@ -1,17 +1,25 @@
 package com.example.ailive;
 
 
+import static com.alibaba.idst.nui.FileUtil.readFile;
+
 import android.content.Context;
+import android.os.Build;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class GPT implements Runnable {
     private UI ui;
@@ -60,11 +68,17 @@ public class GPT implements Runnable {
             conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
             conn.setDoOutput(true);
 
-            // 构建 JSON 请求体
+            String roleDesc = readFileFromAssets("RoleDesc.txt");
+            String roleConversation = readFileFromAssets("RoleConversation.txt");
+            String prompt = readFileFromAssets("Prompt.txt");
+
+
+            prompt = String.format(prompt, roleDesc, roleConversation);
+
             String jsonInputString = "{"
                     + "\"model\": \"GPT-4-1106-preview\","
-                    + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + asrText + "\" }],"
-                    + "\"stream\": true" // 添加这一行来启用流式传输
+                    + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + prompt + "\" }],"
+                    + "\"stream\": true"
                     + "}";
 
             // 发送请求
@@ -76,7 +90,7 @@ public class GPT implements Runnable {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
                 String line;
                 while ((line = br.readLine()) != null && !Thread.currentThread().isInterrupted()) {
-                    if(line.isEmpty()){
+                    if (line.isEmpty()) {
                         continue;
                     }
                     // 解析 JSON 数据
@@ -88,14 +102,14 @@ public class GPT implements Runnable {
 
                     if (delta.has("content")) {
                         String content = delta.getString("content");
-                        if(content.isEmpty()){
+                        if (content.isEmpty()) {
                             continue;
                         }
                         // 将内容添加到累积文本
                         accumulatedText.append(content);
                         segmentText.append(content);
                         ui.showText(ui.getGptView(), "GPT：" + accumulatedText); // 显示累积的文本
-                    }else{
+                    } else {
                         processSegmentText();
                         segmentText.setLength(0);
                         accumulatedText.setLength(0);
@@ -201,6 +215,14 @@ public class GPT implements Runnable {
             gptThread = null;
         }
         tts.onStop();
+    }
+
+    public String readFileFromAssets(String fileName) throws IOException {
+        try (InputStream is = context.getAssets().open(fileName)) {
+            byte[] buffer = new byte[is.available()];
+            is.read(buffer);
+            return new String(buffer, StandardCharsets.UTF_8);
+        }
     }
 
 }
