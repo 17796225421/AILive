@@ -21,8 +21,11 @@ import android.provider.Settings;
 import android.text.TextUtils;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -44,6 +47,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 // 1. UI 类
 public class UI extends Activity {
@@ -254,6 +259,17 @@ public class UI extends Activity {
             }
         });
 
+        Button backgroundBtn = findViewById(R.id.background_btn);
+        backgroundBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                GridView gridView = findViewById(R.id.grid_view);
+                List<String> imagePaths = loadImagePaths(); // 获取图片路径列表
+                ImageAdapter imageAdapter = new ImageAdapter(UI.this, imagePaths);
+                gridView.setAdapter(imageAdapter);
+                gridView.setVisibility(View.VISIBLE); // 显示 GridView
+            }
+        });
 
         mHanderThread = new HandlerThread("process_thread");
         mHanderThread.start();
@@ -441,5 +457,72 @@ public class UI extends Activity {
             e.printStackTrace();
         }
     }
+
+    public class ImageAdapter extends BaseAdapter {
+        private Context context;
+        private List<String> imagePaths;
+
+        public ImageAdapter(Context context, List<String> imagePaths) {
+            this.context = context;
+            this.imagePaths = imagePaths;
+        }
+
+        @Override
+        public int getCount() {
+            return imagePaths.size();
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return imagePaths.get(position);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            ImageView imageView;
+            if (convertView == null) {
+                // 如果视图未被重用，创建一个新的 ImageView
+                imageView = new ImageView(context);
+                imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                imageView.setLayoutParams(new GridView.LayoutParams(240, 240));
+            } else {
+                // 否则重用旧的视图
+                imageView = (ImageView) convertView;
+            }
+
+            // 从路径中加载图片
+            Bitmap bitmap = BitmapFactory.decodeFile(imagePaths.get(position));
+            imageView.setImageBitmap(bitmap);
+
+            return imageView;
+        }
+
+    }
+    private List<String> loadImagePaths() {
+        List<String> imagePaths = new ArrayList<>();
+        File playgroundDir = new File(getFilesDir(), "background");
+
+        // 确保目录存在
+        if (playgroundDir.exists() && playgroundDir.isDirectory()) {
+            File[] files = playgroundDir.listFiles();
+
+            if (files != null) {
+                for (File file : files) {
+                    // 假设您只想加载JPG或PNG格式的图片
+                    if (file.isFile() && (file.getName().endsWith(".jpg") || file.getName().endsWith(".png"))) {
+                        imagePaths.add(file.getAbsolutePath());
+                    }
+                }
+            }
+        }
+
+        return imagePaths;
+    }
+
 
 }
