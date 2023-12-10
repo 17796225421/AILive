@@ -86,12 +86,50 @@
             android:layout_weight="1"
             android:text="背景" />
 
+    </LinearLayout>
+    <LinearLayout
+        android:id="@+id/grid_view_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"> <!-- 初始设置为不可见 -->
+
+        <!-- GridView -->
         <GridView
             android:id="@+id/grid_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:numColumns="3"
-            android:visibility="gone"/> <!-- 初始设置为不可见 -->
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:numColumns="3"/>
+
+        <!-- 控制按钮 -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/button_cancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="取消" />
+
+            <Button
+                android:id="@+id/button_delete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="删除" />
+
+            <Button
+                android:id="@+id/button_submit"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="提交" />
+        </LinearLayout>
     </LinearLayout>
 
 </RelativeLayout>

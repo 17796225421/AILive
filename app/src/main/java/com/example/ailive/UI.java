@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.SparseBooleanArray;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,6 +28,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -263,11 +265,12 @@ public class UI extends Activity {
         backgroundBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
                 GridView gridView = findViewById(R.id.grid_view);
                 List<String> imagePaths = loadImagePaths(); // 获取图片路径列表
                 ImageAdapter imageAdapter = new ImageAdapter(UI.this, imagePaths);
                 gridView.setAdapter(imageAdapter);
-                gridView.setVisibility(View.VISIBLE); // 显示 GridView
+                gridViewContainer.setVisibility(View.VISIBLE); // 显示 GridView 和按钮
             }
         });
 
@@ -461,6 +464,7 @@ public class UI extends Activity {
     public class ImageAdapter extends BaseAdapter {
         private Context context;
         private List<String> imagePaths;
+        private SparseBooleanArray selectedItems = new SparseBooleanArray();
 
         public ImageAdapter(Context context, List<String> imagePaths) {
             this.context = context;
@@ -489,7 +493,7 @@ public class UI extends Activity {
                 // 如果视图未被重用，创建一个新的 ImageView
                 imageView = new ImageView(context);
                 imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                imageView.setLayoutParams(new GridView.LayoutParams(240, 240));
+                imageView.setLayoutParams(new GridView.LayoutParams(450, 450));
             } else {
                 // 否则重用旧的视图
                 imageView = (ImageView) convertView;
@@ -499,7 +503,21 @@ public class UI extends Activity {
             Bitmap bitmap = BitmapFactory.decodeFile(imagePaths.get(position));
             imageView.setImageBitmap(bitmap);
 
+            imageView.setAlpha(selectedItems.get(position) ? 0.5f : 1f); // 根据是否选中来改变透明度
+
+            imageView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    boolean isSelected = !selectedItems.get(position);
+                    selectedItems.put(position, isSelected);
+                    imageView.setAlpha(isSelected ? 0.5f : 1f); // 根据是否选中来改变透明度
+                }
+            });
+
             return imageView;
+        }
+        public SparseBooleanArray getSelectedItems() {
+            return selectedItems;
         }
 
     }
