@@ -124,11 +124,11 @@
                 android:text="删除" />
 
             <Button
-                android:id="@+id/button_submit"
+                android:id="@+id/button_increase"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="提交" />
+                android:text="提高" />
         </LinearLayout>
     </LinearLayout>
 

@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.net.Uri;
+import android.util.Log;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -31,7 +32,9 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +51,7 @@ public class Dalle3 {
     Context context;
     private static final int REQUEST_CODE_SELECT_PHOTOS = 1;
 
+    private Map<String, Integer> imageWeights = new HashMap<>();
 
     private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
     private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
@@ -104,10 +108,19 @@ public class Dalle3 {
             return null;
         }
 
-        Collections.shuffle(validFiles); // Shuffle to get randomness
+        // 根据权重创建加权列表
+        List<File> weightedList = new ArrayList<>();
+        for (File file : validFiles) {
+            int weight = imageWeights.getOrDefault(file.getAbsolutePath(), 1);
+            for (int i = 0; i < weight; i++) {
+                weightedList.add(file);
+            }
+        }
 
-        Bitmap firstBitmap = BitmapFactory.decodeFile(validFiles.get(0).getAbsolutePath());
-        Bitmap secondBitmap = BitmapFactory.decodeFile(validFiles.get(1).getAbsolutePath());
+        Collections.shuffle(weightedList); // Shuffle to get randomness
+
+        Bitmap firstBitmap = BitmapFactory.decodeFile(weightedList.get(0).getAbsolutePath());
+        Bitmap secondBitmap = BitmapFactory.decodeFile(weightedList.get(1).getAbsolutePath());
 
         Bitmap result = Bitmap.createBitmap(1024, 2048, firstBitmap.getConfig());
         Canvas canvas = new Canvas(result);
@@ -245,6 +258,19 @@ public class Dalle3 {
             }
         }
         return null;
+    }
+
+    public void increaseImageWeight(String imagePath) {
+        // 检查图像路径是否已存在于 imageWeights 中
+        if (imageWeights.containsKey(imagePath)) {
+            // 如果存在，增加权重值
+            int currentWeight = imageWeights.get(imagePath);
+            imageWeights.put(imagePath, currentWeight + 1);
+        } else {
+            // 如果不存在，设置权重为 2
+            imageWeights.put(imagePath, 2);
+        }
+        Log.i("imageWeight", imagePath + ":" + imageWeights.get(imagePath));
     }
 }
 

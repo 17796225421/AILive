@@ -293,6 +293,19 @@ public class UI extends Activity {
             }
         });
 
+        Button increaseButton = findViewById(R.id.button_increase);
+        increaseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SparseBooleanArray selectedItems = imageAdapter.getSelectedItems();
+                for (int i = 0; i < selectedItems.size(); i++) {
+                    if (selectedItems.valueAt(i)) {
+                        String selectedImagePath = imageAdapter.imagePaths.get(selectedItems.keyAt(i));
+                        dalle3.increaseImageWeight(selectedImagePath);
+                    }
+                }
+            }
+        });
 
         mHanderThread = new HandlerThread("process_thread");
         mHanderThread.start();
@@ -536,6 +549,7 @@ public class UI extends Activity {
 
             return imageView;
         }
+
         public SparseBooleanArray getSelectedItems() {
             return selectedItems;
         }
@@ -563,6 +577,7 @@ public class UI extends Activity {
         }
 
     }
+
     private List<String> loadImagePaths() {
         List<String> imagePaths = new ArrayList<>();
         File playgroundDir = new File(getFilesDir(), "background");
