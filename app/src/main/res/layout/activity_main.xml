@@ -86,6 +86,12 @@
             android:layout_weight="1"
             android:text="背景" />
 
+        <Button
+            android:id="@+id/viewConversationButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查看对话" />
+
     </LinearLayout>
     <LinearLayout
         android:id="@+id/grid_view_container"

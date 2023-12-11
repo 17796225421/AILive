@@ -276,6 +276,13 @@ public class UI extends Activity {
             }
         });
 
+        // 查看对话按钮的点击事件
+        findViewById(R.id.viewConversationButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+            }
+        });
+
         // 获取包含 GridView 和控制按钮的容器
         LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
         // 取消按钮的点击事件
