@@ -29,6 +29,7 @@ import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -286,11 +287,19 @@ public class UI extends Activity {
             public void onClick(View v) {
                 try {
                     String content = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+
+                    // 创建一个EditText
                     EditText editText = new EditText(UI.this);
                     editText.setText(content);
+
+                    // 创建一个ScrollView，并将EditText添加到其中
+                    ScrollView scrollView = new ScrollView(UI.this);
+                    scrollView.addView(editText);
+
+                    // 创建并显示AlertDialog，将ScrollView设置为它的视图
                     new AlertDialog.Builder(UI.this)
                             .setTitle("编辑文件")
-                            .setView(editText)
+                            .setView(scrollView)  // 设置ScrollView为对话框内容
                             .setPositiveButton("保存", (dialog, which) -> {
                                 try {
                                     writeFileToInternalStorage("/prompt/RoleConversation.txt", editText.getText().toString());
@@ -308,17 +317,26 @@ public class UI extends Activity {
             }
         });
 
-        // 查看对话按钮的点击事件
+
+        // 查看角色按钮的点击事件
         findViewById(R.id.viewRoleButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
                     String content = readFileFromInternalStorage("/prompt/RoleDesc.txt");
+
+                    // 创建一个EditText
                     EditText editText = new EditText(UI.this);
                     editText.setText(content);
+
+                    // 创建一个ScrollView，并将EditText添加到其中
+                    ScrollView scrollView = new ScrollView(UI.this);
+                    scrollView.addView(editText);
+
+                    // 创建并显示AlertDialog，将ScrollView设置为它的视图
                     new AlertDialog.Builder(UI.this)
                             .setTitle("编辑文件")
-                            .setView(editText)
+                            .setView(scrollView)  // 设置ScrollView为对话框内容
                             .setPositiveButton("保存", (dialog, which) -> {
                                 try {
                                     writeFileToInternalStorage("/prompt/RoleDesc.txt", editText.getText().toString());
