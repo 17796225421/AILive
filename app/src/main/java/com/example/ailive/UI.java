@@ -308,6 +308,34 @@ public class UI extends Activity {
             }
         });
 
+        // 查看对话按钮的点击事件
+        findViewById(R.id.viewRoleButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    String content = readFileFromInternalStorage("/prompt/RoleDesc.txt");
+                    EditText editText = new EditText(UI.this);
+                    editText.setText(content);
+                    new AlertDialog.Builder(UI.this)
+                            .setTitle("编辑文件")
+                            .setView(editText)
+                            .setPositiveButton("保存", (dialog, which) -> {
+                                try {
+                                    writeFileToInternalStorage("/prompt/RoleDesc.txt", editText.getText().toString());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    // 处理写入错误
+                                }
+                            })
+                            .setNegativeButton("取消", null)
+                            .show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // 处理读取错误
+                }
+            }
+        });
+
         // 获取包含 GridView 和控制按钮的容器
         LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
         // 取消按钮的点击事件

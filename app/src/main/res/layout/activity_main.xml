@@ -92,6 +92,12 @@
             android:layout_height="wrap_content"
             android:text="查看对话" />
 
+        <Button
+            android:id="@+id/viewRoleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="查看角色" />
+
     </LinearLayout>
     <LinearLayout
         android:id="@+id/grid_view_container"
