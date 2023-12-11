@@ -15,6 +15,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -72,9 +74,9 @@ public class GPT implements Runnable {
             conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
             conn.setDoOutput(true);
 
-            String roleDesc = readFileFromAssets("RoleDesc.txt");
-            String roleConversation = readFileFromAssets("RoleConversation.txt");
-            String prompt = readFileFromAssets("Prompt.txt");
+            String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
+            String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+            String prompt = readFileFromInternalStorage("/prompt/Prompt.txt");
 
 
             prompt = String.format(prompt, roleDesc, roleConversation);
@@ -239,12 +241,16 @@ public class GPT implements Runnable {
         tts.onStop();
     }
 
-    public String readFileFromAssets(String fileName) throws IOException {
-        try (InputStream is = context.getAssets().open(fileName)) {
-            byte[] buffer = new byte[is.available()];
-            is.read(buffer);
-            return new String(buffer, StandardCharsets.UTF_8);
+    public String readFileFromInternalStorage(String fileName) throws IOException {
+        File file = new File(context.getFilesDir(), fileName);
+        int length = (int) file.length();
+        byte[] buffer = new byte[length];
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            fis.read(buffer);
         }
+
+        return new String(buffer, StandardCharsets.UTF_8);
     }
 
 }
