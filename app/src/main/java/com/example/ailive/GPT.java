@@ -91,9 +91,14 @@ public class GPT implements Runnable {
 
             // 构建整个 JSON 请求对象
             JsonObject jsonRequest = new JsonObject();
-            jsonRequest.addProperty("model", "GPT-4-1106-preview");
+            jsonRequest.addProperty("model", "gpt-4-1106-preview");
             jsonRequest.add("messages", messagesArray);
             jsonRequest.addProperty("stream", true);
+            jsonRequest.addProperty("temperature", 1);
+            jsonRequest.addProperty("top_p", 1.00);
+            jsonRequest.addProperty("presence_penalty", 0.06);
+            jsonRequest.addProperty("max_tokens", 300);
+            jsonRequest.addProperty("frequency_penalty", 0.05);
 
             // 转换为 JSON 字符串
             String jsonInputString = gson.toJson(jsonRequest);
