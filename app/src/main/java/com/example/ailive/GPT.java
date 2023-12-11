@@ -6,6 +6,10 @@ import static com.alibaba.idst.nui.FileUtil.readFile;
 import android.content.Context;
 import android.os.Build;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -74,12 +78,25 @@ public class GPT implements Runnable {
 
 
             prompt = String.format(prompt, roleDesc, roleConversation);
+            Gson gson = new Gson();
 
-            String jsonInputString = "{"
-                    + "\"model\": \"GPT-4-1106-preview\","
-                    + "\"messages\": [{ \"role\": \"user\", \"content\": \"" + prompt + "\" }],"
-                    + "\"stream\": true"
-                    + "}";
+            // 创建 message 对象
+            JsonObject message = new JsonObject();
+            message.addProperty("role", "user");
+            message.addProperty("content", prompt); // 这里使用您的 prompt 变量
+
+            // 创建包含 message 对象的 JSON 数组
+            JsonArray messagesArray = new JsonArray();
+            messagesArray.add(message);
+
+            // 构建整个 JSON 请求对象
+            JsonObject jsonRequest = new JsonObject();
+            jsonRequest.addProperty("model", "GPT-4-1106-preview");
+            jsonRequest.add("messages", messagesArray);
+            jsonRequest.addProperty("stream", true);
+
+            // 转换为 JSON 字符串
+            String jsonInputString = gson.toJson(jsonRequest);
 
             // 发送请求
             try (OutputStream os = conn.getOutputStream()) {
