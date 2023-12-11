@@ -17,6 +17,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -32,6 +33,7 @@ public class GPT implements Runnable {
     private String asrText;
     StringBuilder accumulatedText;
     StringBuilder segmentText;
+    String lastAccumulatedText="";
     Context context;
     TTS tts;
     private Thread gptThread;  // 添加这一行
@@ -73,6 +75,9 @@ public class GPT implements Runnable {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
             conn.setDoOutput(true);
+
+            appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
+            appendTextToFile("/prompt/RoleConversation.txt", asrText);
 
             String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
             String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
@@ -134,6 +139,7 @@ public class GPT implements Runnable {
                         segmentText.append(content);
                         ui.showText(ui.getGptView(), "GPT：" + accumulatedText); // 显示累积的文本
                     } else {
+                        lastAccumulatedText = accumulatedText.toString();
                         processSegmentText();
                         segmentText.setLength(0);
                         accumulatedText.setLength(0);
@@ -253,4 +259,10 @@ public class GPT implements Runnable {
         return new String(buffer, StandardCharsets.UTF_8);
     }
 
+    private void appendTextToFile(String filePath, String textToAppend) throws IOException {
+        File file = new File(context.getFilesDir()+ filePath);
+        try (FileOutputStream fos = new FileOutputStream(file, true)) {
+            fos.write((textToAppend + "\n").getBytes(StandardCharsets.UTF_8));
+        }
+    }
 }

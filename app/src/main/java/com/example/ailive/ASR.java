@@ -175,9 +175,11 @@ public class ASR implements INativeNuiCallback {
         // 接口说明可见https://help.aliyun.com/document_detail/173528.html
         JSONObject params = new JSONObject();
         JSONObject nls_config = new JSONObject();
-        nls_config.put("enable_intermediate_result", false);
-        nls_config.put("disfluency", true);
-        nls_config.put("speech_noise_threshold", 3.0);
+        nls_config.put("enable_intermediate_result", false); // 是否返回中间识别结果，默认值：false。
+        nls_config.put("enable_punctuation_prediction", true); // 是否在后处理中添加标点，默认值：false。
+        nls_config.put("max_sentence_silence", 2000); // 语音断句检测阈值，静音时长超过该阈值被认为断句。取值范围：200ms～2000ms，默认值：800ms。
+        nls_config.put("disfluency", true); // 过滤语气词，即声音顺滑，默认值false
+        nls_config.put("speech_noise_threshold", 0.98); // 噪音参数阈值，取值范围：-1～+1。取值越接近+1，判定为噪音的越多，亦即有可能更多语音被当作噪音被拒绝掉。
         params.put("nls_config", nls_config);
         params.put("service_type", Constants.kServiceTypeSpeechTranscriber);
         return params.toString();
