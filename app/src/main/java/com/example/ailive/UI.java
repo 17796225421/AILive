@@ -354,6 +354,33 @@ public class UI extends Activity {
             }
         });
 
+        findViewById(R.id.reGenerateButton).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                asr.getGpt().onSentenceStop();
+
+                // 创建一个新线程来执行网络操作
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            asr.getGpt().callGptApi();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            // 可选：在主线程上更新UI，例如显示错误信息
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(UI.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        }
+                    }
+                }).start();
+            }
+        });
+
+
         // 获取包含 GridView 和控制按钮的容器
         LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
         // 取消按钮的点击事件

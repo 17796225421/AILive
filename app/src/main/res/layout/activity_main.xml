@@ -88,15 +88,24 @@
 
         <Button
             android:id="@+id/viewConversationButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="查看对话" />
 
         <Button
             android:id="@+id/viewRoleButton"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="查看角色" />
+
+        <Button
+            android:id="@+id/reGenerateButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="重新生成" />
 
     </LinearLayout>
     <LinearLayout
