@@ -42,13 +42,17 @@ import com.example.ailive.live2d.LAppDelegate;
 
 import org.json.JSONException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -280,6 +284,27 @@ public class UI extends Activity {
         findViewById(R.id.viewConversationButton).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                try {
+                    String content = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+                    EditText editText = new EditText(UI.this);
+                    editText.setText(content);
+                    new AlertDialog.Builder(UI.this)
+                            .setTitle("编辑文件")
+                            .setView(editText)
+                            .setPositiveButton("保存", (dialog, which) -> {
+                                try {
+                                    writeFileToInternalStorage("/prompt/RoleConversation.txt", editText.getText().toString());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                    // 处理写入错误
+                                }
+                            })
+                            .setNegativeButton("取消", null)
+                            .show();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    // 处理读取错误
+                }
             }
         });
 
@@ -615,6 +640,24 @@ public class UI extends Activity {
         }
 
         return imagePaths;
+    }
+    private String readFileFromInternalStorage(String fileName) throws IOException {
+        File file = new File(getFilesDir(), fileName);
+        int length = (int) file.length();
+        byte[] buffer = new byte[length];
+
+        try (FileInputStream fis = new FileInputStream(file)) {
+            fis.read(buffer);
+        }
+
+        return new String(buffer, StandardCharsets.UTF_8);
+    }
+
+    private void writeFileToInternalStorage(String filePath, String content) throws IOException {
+        File file = new File(getFilesDir() , filePath);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(content.getBytes(StandardCharsets.UTF_8));
+        }
     }
 
 
