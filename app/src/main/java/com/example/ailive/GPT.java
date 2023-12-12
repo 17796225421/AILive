@@ -5,6 +5,7 @@ import static com.alibaba.idst.nui.FileUtil.readFile;
 
 import android.content.Context;
 import android.os.Build;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -35,7 +36,7 @@ public class GPT implements Runnable {
     private String asrText;
     StringBuilder accumulatedText;
     StringBuilder segmentText;
-    String lastAccumulatedText="";
+    String lastAccumulatedText = "";
     Context context;
     TTS tts;
     private Thread gptThread;  // 添加这一行
@@ -76,9 +77,120 @@ public class GPT implements Runnable {
 
             callGptApi();
 
+            // 使用匿名线程执行SummarizeConversation
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        SummarizeConversation();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }).start();
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void SummarizeConversation() throws IOException, JSONException {
+        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+        if (roleConversation.length() > 8 * 1000) {
+            // 在 UI 线程上显示开始处理的 Toast
+            ui.runOnUiThread(() -> Toast.makeText(context, "超过8000字，开始总结对话...", Toast.LENGTH_SHORT).show());
+
+            // 剪切前4000个字符
+            String firstPart = roleConversation.substring(0, 4000);
+            // 获取剩余的后4000个字符
+            String lastPart = roleConversation.substring(roleConversation.length() - 4000);
+
+            // 调用 GPT 接口进行总结
+            String summary = callGptForSummary(firstPart);
+
+            // 合并总结内容与后4000个字符
+            String summarizedConversation = summary + lastPart;
+
+            // 重新读取文件以获取新增内容
+            String updatedRoleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+            // 计算原始内容与新增内容之间的差异
+            String newContent = updatedRoleConversation.substring(roleConversation.length());
+
+            // 将新内容添加到总结内容后面
+            summarizedConversation += newContent;
+
+            // 写回文件
+            writeFileToInternalStorage("/prompt/RoleConversation.txt", summarizedConversation);
+
+            // 在 UI 线程上显示处理结束的 Toast
+            ui.runOnUiThread(() -> Toast.makeText(context, "对话总结完成！", Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    private String callGptForSummary(String text) throws IOException, JSONException {
+        URL url = new URL(GPT_API_ENDPOINT);
+        // 创建和配置 HTTP 连接
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY);
+        conn.setDoOutput(true);
+
+        Gson gson = new Gson();
+
+        // 创建 message 对象
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        text+="\\n\\n请总结以上内容。";
+        message.addProperty("content", text);
+
+        // 创建包含 message 对象的 JSON 数组
+        JsonArray messagesArray = new JsonArray();
+        messagesArray.add(message);
+
+        // 构建整个 JSON 请求对象
+        JsonObject jsonRequest = new JsonObject();
+        jsonRequest.addProperty("model", "gpt-4-1106-preview");
+        jsonRequest.add("messages", messagesArray);
+        jsonRequest.addProperty("stream", false);
+        jsonRequest.addProperty("temperature", 1);
+        jsonRequest.addProperty("top_p", 1.00);
+        jsonRequest.addProperty("presence_penalty", 0.06);
+        jsonRequest.addProperty("max_tokens", 200);
+        jsonRequest.addProperty("frequency_penalty", 0.05);
+
+        // 转换为 JSON 字符串
+        String jsonInputString = gson.toJson(jsonRequest);
+
+        // 发送请求
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+
+        // 读取响应
+        StringBuilder response = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            String responseLine;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+        }
+
+        // 解析 JSON 响应
+        JSONObject responseObject = new JSONObject(response.toString());
+        JSONArray choices = responseObject.getJSONArray("choices");
+        if (choices.length() > 0) {
+            JSONObject firstChoice = choices.getJSONObject(0);
+            if (firstChoice.has("message") && firstChoice.getJSONObject("message").has("content")) {
+                String content = firstChoice.getJSONObject("message").getString("content");
+                return content + "\n\n\n";
+            }
+        }
+
+        return "未能获取总结"; // 如果没有有效的响应
     }
 
     public void callGptApi() throws IOException {
@@ -116,7 +228,7 @@ public class GPT implements Runnable {
         jsonRequest.addProperty("temperature", 1);
         jsonRequest.addProperty("top_p", 1.00);
         jsonRequest.addProperty("presence_penalty", 0.06);
-        jsonRequest.addProperty("max_tokens", 300);
+        jsonRequest.addProperty("max_tokens", 200);
         jsonRequest.addProperty("frequency_penalty", 0.05);
 
         // 转换为 JSON 字符串
@@ -269,9 +381,16 @@ public class GPT implements Runnable {
     }
 
     private void appendTextToFile(String filePath, String textToAppend) throws IOException {
-        File file = new File(context.getFilesDir()+ filePath);
+        File file = new File(context.getFilesDir() + filePath);
         try (FileOutputStream fos = new FileOutputStream(file, true)) {
             fos.write((textToAppend + "\n").getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    private void writeFileToInternalStorage(String filePath, String content) throws IOException {
+        File file = new File(context.getFilesDir() , filePath);
+        try (FileOutputStream fos = new FileOutputStream(file)) {
+            fos.write(content.getBytes(StandardCharsets.UTF_8));
         }
     }
 }
