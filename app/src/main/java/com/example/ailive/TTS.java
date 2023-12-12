@@ -99,8 +99,11 @@ public class TTS {
         url += "&token=" + accessToken.getToken();
         url += "&text=" + text;
         url += "&format=mp3";
-        url += "&voice=aixia";
         url += "&sample_rate=16000";
+        url += "&voice=aibao";
+        url += "&volume=100";
+        url += "&speech_rate=200";
+        url += "&pitch_rate=0";
         return url;
     }
 
