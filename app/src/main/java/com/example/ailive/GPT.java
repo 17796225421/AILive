@@ -416,6 +416,10 @@ public class GPT implements Runnable {
         conn.setRequestProperty("Content-Type", "application/json");
         conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
         conn.setDoOutput(true);
+        // 设置连接超时时间（例如 120 秒）
+        conn.setConnectTimeout(120*1000);
+        // 设置读取超时时间（例如 120 秒）
+        conn.setReadTimeout(120*1000);
         String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
         String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
         String generateImageText = "这是角色描述："+roleDesc+"\n"
