@@ -213,7 +213,9 @@ public class GPT implements Runnable {
 
 
         String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
-        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt") + "\n" + asrText;
+        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt") + "\n"
+                + "这是{{user}}的输入从语音转文字的结果，可能有误，请考虑从语音识别错误的角度纠正{{user}}的输入，并且结合上下文尽可能猜测{{user}}的真实意图："
+                + asrText;
         lastAsrText = asrText;
         String prompt = readFileFromInternalStorage("/prompt/Prompt.txt");
 
