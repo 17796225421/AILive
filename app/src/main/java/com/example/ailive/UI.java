@@ -359,24 +359,41 @@ public class UI extends Activity {
             public void onClick(View v) {
                 asr.getGpt().onSentenceStop();
 
-                // 创建一个新线程来执行网络操作
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            asr.getGpt().callGptApi();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            // 可选：在主线程上更新UI，例如显示错误信息
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    Toast.makeText(UI.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        }
-                    }
-                }).start();
+                // 获取当前文本
+                String currentText = asr.getGpt().getLastAsrText();
+
+                // 创建一个 EditText 用于编辑文本
+                final EditText editText = new EditText(UI.this);
+                editText.setText(currentText);
+
+                // 创建并显示 AlertDialog
+                new AlertDialog.Builder(UI.this)
+                        .setTitle("编辑文本")
+                        .setView(editText)
+                        .setPositiveButton("提交", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                // 获取修改后的文本
+                                String modifiedText = editText.getText().toString();
+                                // 设置修改后的文本
+                                asr.getGpt().setAsrText(modifiedText);
+
+                                // 在新线程中调用 GPT API
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            asr.getGpt().callGptApi();
+                                        } catch (IOException e) {
+                                            // 异常处理
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                }).start();
+                            }
+                        })
+                        .setNegativeButton("取消", null)
+                        .show();
             }
         });
 

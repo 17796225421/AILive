@@ -37,6 +37,16 @@ public class GPT implements Runnable {
     StringBuilder accumulatedText;
     StringBuilder segmentText;
     String lastAccumulatedText = "";
+
+    public String getLastAsrText() {
+        return lastAsrText;
+    }
+
+    public void setLastAsrText(String lastAsrText) {
+        this.lastAsrText = lastAsrText;
+    }
+
+    String lastAsrText = "";
     Context context;
     TTS tts;
     private Thread gptThread;  // 添加这一行
@@ -71,9 +81,8 @@ public class GPT implements Runnable {
     @Override
     public void run() {
         try {
-
+            appendTextToFile("/prompt/RoleConversation.txt", lastAsrText);
             appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
-            appendTextToFile("/prompt/RoleConversation.txt", asrText);
 
             callGptApi();
 
@@ -143,7 +152,7 @@ public class GPT implements Runnable {
         // 创建 message 对象
         JsonObject message = new JsonObject();
         message.addProperty("role", "user");
-        text+="\\n\\n请总结以上内容。";
+        text += "\\n\\n请总结以上内容。";
         message.addProperty("content", text);
 
         // 创建包含 message 对象的 JSON 数组
@@ -204,7 +213,8 @@ public class GPT implements Runnable {
 
 
         String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
-        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt") + "\n" + asrText;
+        lastAsrText = asrText;
         String prompt = readFileFromInternalStorage("/prompt/Prompt.txt");
 
 
@@ -383,12 +393,12 @@ public class GPT implements Runnable {
     private void appendTextToFile(String filePath, String textToAppend) throws IOException {
         File file = new File(context.getFilesDir() + filePath);
         try (FileOutputStream fos = new FileOutputStream(file, true)) {
-            fos.write((textToAppend + "\n").getBytes(StandardCharsets.UTF_8));
+            fos.write(("\n" + textToAppend + "\n").getBytes(StandardCharsets.UTF_8));
         }
     }
 
     private void writeFileToInternalStorage(String filePath, String content) throws IOException {
-        File file = new File(context.getFilesDir() , filePath);
+        File file = new File(context.getFilesDir(), filePath);
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(content.getBytes(StandardCharsets.UTF_8));
         }
