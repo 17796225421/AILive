@@ -202,59 +202,24 @@ public class UI extends Activity {
                     @Override
                     public void run() {
                         try {
+                            // 直接获取生成图像的提示
                             String imageGeneratePrompt = asr.getGpt().getImageGeneratePrompt();
-                            // 切换回主线程来处理UI
+
+                            // 调用 API 生成图像
+                            String imageUrl = dalle3.callImageGenerateApi(imageGeneratePrompt);
+
+                            // 下载生成的图像
+                            Bitmap bitmap = downloadImage(imageUrl);
+
+                            // 在主线程中显示图像和保存选项
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    // 创建 EditText 并设置预先填充内容
-                                    final EditText input = new EditText(UI.this);
-                                    input.setText(imageGeneratePrompt);
-
-                                    // 创建并显示 AlertDialog
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(UI.this);
-                                    builder.setTitle("Generated Prompt.txt")
-                                            .setView(input) // 将 EditText 设置为对话框视图
-                                            .setPositiveButton("提交", new DialogInterface.OnClickListener() {
-                                                @Override
-                                                public void onClick(DialogInterface dialog, int which) {
-                                                    String modifiedPrompt = input.getText().toString();
-                                                    // 在这里执行网络操作，使用 modifiedPrompt
-                                                    // 注意：网络操作应在新的线程中进行
-                                                    new Thread(new Runnable() {
-                                                        @Override
-                                                        public void run() {
-                                                            // 执行网络操作
-                                                            // ...
-                                                            try {
-                                                                String imageUrl = dalle3.callImageGenerateApi(modifiedPrompt);
-                                                                // 在新线程中下载图片
-
-                                                                Bitmap bitmap = downloadImage(imageUrl);
-
-                                                                // 在主线程中更新UI
-                                                                runOnUiThread(new Runnable() {
-                                                                    @Override
-                                                                    public void run() {
-                                                                        showImageDialog(bitmap);
-                                                                    }
-                                                                });
-
-
-                                                            } catch (IOException e) {
-                                                                throw new RuntimeException(e);
-                                                            } catch (JSONException e) {
-                                                                throw new RuntimeException(e);
-                                                            }
-                                                        }
-                                                    }).start();
-                                                }
-                                            })
-                                            .setNegativeButton("取消", null)
-                                            .show();
+                                    showImageDialog(bitmap);
                                 }
                             });
-                        } catch (IOException e) {
+
+                        } catch (IOException | JSONException e) {
                             e.printStackTrace();
                             runOnUiThread(new Runnable() {
                                 @Override
@@ -267,6 +232,7 @@ public class UI extends Activity {
                 }).start();
             }
         });
+
 
         Button backgroundBtn = findViewById(R.id.background_btn);
         backgroundBtn.setOnClickListener(new View.OnClickListener() {
