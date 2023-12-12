@@ -78,7 +78,6 @@ public class UI extends Activity {
     private ASR asr;
     //    private SD sd;
     private Dalle3 dalle3;
-    private Vision vision;
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
     private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
     private ImageAdapter imageAdapter;
@@ -135,8 +134,6 @@ public class UI extends Activity {
                     REQUEST_BLUETOOTH_PERMISSIONS);
         }
 
-        Vision vision = new Vision(this);
-
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -185,13 +182,6 @@ public class UI extends Activity {
 //            }
 //        });
 
-        imageRecognitionBtn = findViewById(R.id.image_recognition_btn);
-        imageRecognitionBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                vision.openURLInChrome();
-            }
-        });
 
         Button imageGenerationBtn = findViewById(R.id.image_generation_btn);
 
