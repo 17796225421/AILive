@@ -214,7 +214,8 @@ public class GPT implements Runnable {
 
         String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
         String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt") + "\n"
-                + "这是{{user}}的输入从语音转文字的结果，可能有误，请考虑从语音识别错误的角度纠正{{user}}的输入，并且结合上下文尽可能猜测{{user}}的真实意图："
+                + "这是{{user}}的输入从语音转文字的结果，可能有误，请考虑从语音识别错误的角度纠正{{user}}的输入，" +
+                "并且结合上下文尽可能猜测{{user}}的真实意图，但是输出不允许提及语音转文字等ooc字眼："
                 + asrText;
         lastAsrText = asrText;
         String prompt = readFileFromInternalStorage("/prompt/Prompt.txt");
@@ -404,5 +405,76 @@ public class GPT implements Runnable {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(content.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    public String getImageGeneratePrompt() throws IOException {
+        // 利用gpt根据上下文生成合成图片的prompt
+        URL url = new URL(GPT_API_ENDPOINT);
+        // 创建和配置 HTTP 连接
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
+        conn.setDoOutput(true);
+        String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
+        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
+        String generateImageText = "这是角色描述："+roleDesc+"\n"
+                +"这是角色对话："+roleConversation+lastAsrText+lastAccumulatedText+"\n"
+                +"根据角色描述来确定图中女角色的特点，根据角色对话来确定图中女主角的行为和环境，图中只允许出现女主角一个人类。根据以上要求生成画图的prompt";
+
+        Gson gson = new Gson();
+
+        // 创建 message 对象
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        message.addProperty("content", generateImageText);
+
+        // 创建包含 message 对象的 JSON 数组
+        JsonArray messagesArray = new JsonArray();
+        messagesArray.add(message);
+
+        // 构建整个 JSON 请求对象
+        JsonObject jsonRequest = new JsonObject();
+        jsonRequest.addProperty("model", "gpt-4-1106-preview");
+        jsonRequest.add("messages", messagesArray);
+        jsonRequest.addProperty("temperature", 1);
+        jsonRequest.addProperty("top_p", 1.00);
+        jsonRequest.addProperty("presence_penalty", 0.06);
+        jsonRequest.addProperty("frequency_penalty", 0.05);
+
+        // 转换为 JSON 字符串
+        String jsonInputString = gson.toJson(jsonRequest);
+
+
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+        String imageGeneratePrompt = "";
+        // 读取响应
+        try (BufferedReader br = new BufferedReader(
+                new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            StringBuilder response = new StringBuilder();
+            String responseLine = null;
+            while ((responseLine = br.readLine()) != null) {
+                response.append(responseLine.trim());
+            }
+            String jsonResponse = response.toString();
+            try {
+                JSONObject obj = new JSONObject(jsonResponse);
+                JSONArray choices = obj.getJSONArray("choices");
+                if (choices.length() > 0) {
+                    JSONObject firstChoice = choices.getJSONObject(0);
+                    if (firstChoice.has("message") && firstChoice.getJSONObject("message").has("content")) {
+                        String content = firstChoice.getJSONObject("message").getString("content");
+                        imageGeneratePrompt = content;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                // 处理异常，例如打印错误日志
+            }
+        }
+        return imageGeneratePrompt;
     }
 }

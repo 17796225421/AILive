@@ -202,7 +202,7 @@ public class UI extends Activity {
                     @Override
                     public void run() {
                         try {
-                            String imageGeneratePrompt = dalle3.getImageGeneratePrompt();
+                            String imageGeneratePrompt = asr.getGpt().getImageGeneratePrompt();
                             // 切换回主线程来处理UI
                             runOnUiThread(new Runnable() {
                                 @Override
