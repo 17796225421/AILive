@@ -102,7 +102,8 @@ public class ASR implements INativeNuiCallback {
                     return;
                 }
                 String resultValue = payloadObject.getString("result");
-
+                gpt.onStop();
+                gpt.onStart();
                 // 检查结果长度
                 if (resultValue.length() < 5) {
                     for (String stopCommand : STOP_COMMANDS) {
