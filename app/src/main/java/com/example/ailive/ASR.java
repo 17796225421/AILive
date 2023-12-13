@@ -102,8 +102,7 @@ public class ASR implements INativeNuiCallback {
                     return;
                 }
                 String resultValue = payloadObject.getString("result");
-                gpt.onStop();
-                gpt.onStart();
+
                 // 检查结果长度
                 if (resultValue.length() < 5) {
                     for (String stopCommand : STOP_COMMANDS) {
@@ -114,6 +113,9 @@ public class ASR implements INativeNuiCallback {
                     }
                     return;  // 小于5个字，不进行任何处理，直接返回
                 }
+
+                gpt.onStop();
+                gpt.onStart();
 
                 ui.showText(ui.getAskView(), "我：" + resultValue);
 
