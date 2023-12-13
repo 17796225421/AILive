@@ -169,7 +169,8 @@ public class UI extends Activity {
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                asr.getGpt().onSentenceStop();
+                asr.getGpt().onStop();
+                asr.getGpt().onStart();
                 String inputText = askView.getText().toString();
                 asr.processInputText(inputText);
             }

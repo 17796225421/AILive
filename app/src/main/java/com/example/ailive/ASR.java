@@ -107,7 +107,8 @@ public class ASR implements INativeNuiCallback {
                 if (resultValue.length() < 5) {
                     for (String stopCommand : STOP_COMMANDS) {
                         if (resultValue.contains(stopCommand)) {
-                            gpt.onSentenceStop(); // 调用onStop方法
+                            gpt.onStop();
+                            gpt.onStart();
                         }
                     }
                     return;  // 小于5个字，不进行任何处理，直接返回

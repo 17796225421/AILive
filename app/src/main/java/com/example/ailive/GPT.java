@@ -343,7 +343,7 @@ public class GPT implements Runnable {
 
 
     private void processSegmentText() {
-        tts.produce(segmentText.toString());
+        tts.enqueueTextSegment(segmentText.toString());
     }
 
     public String getAsrText() {
@@ -356,9 +356,11 @@ public class GPT implements Runnable {
 
     protected void onStart() {
         accumulatedText.setLength(0);
+        tts.onStart();
     }
 
     protected void onStop() {
+        tts.onStop();
         segmentText.setLength(0);
         segmentStatus = SegmentProcessingStatus.FIRST_40;
         asrText = "";
@@ -366,10 +368,10 @@ public class GPT implements Runnable {
             gptThread.interrupt();  // 尝试中断线程
             gptThread = null;
         }
-        tts.onStop();
     }
 
     public void onSentenceStop() {
+        tts.onStop();
         segmentText.setLength(0);
         segmentStatus = SegmentProcessingStatus.FIRST_40;
         asrText = "";
@@ -378,7 +380,6 @@ public class GPT implements Runnable {
             gptThread.interrupt();  // 尝试中断线程
             gptThread = null;
         }
-        tts.onStop();
     }
 
     public String readFileFromInternalStorage(String fileName) throws IOException {
