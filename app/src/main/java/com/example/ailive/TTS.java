@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -27,7 +28,7 @@ public class TTS {
     private Context context;
     private MediaPlayer audioPlayer;
     private BlockingQueue<File> audioFilesQueue;
-    private final String TTS_API_ENDPOINT = "https://chatapi.onechat.fun/v1/audio/speech";
+    private final String TTS_API_ENDPOINT = "https://s1.v100.vip:11852/voice/bert-vits2";
     private final String TTS_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
     private File currentAudioFile;
     private Thread audioPlaybackThread;
@@ -100,20 +101,22 @@ public class TTS {
         // ...将文本转换为语音并将音频文件放入audioFilesQueue的逻辑...
         OkHttpClient client = new OkHttpClient();
 
-        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+        // 创建多部分请求体的媒体类型
+        MediaType mediaType = MediaType.parse("multipart/form-data");
 
-        // 使用 Gson 的 JsonObject
-        JsonObject jsonRequest = new JsonObject();
-        jsonRequest.addProperty("model", "tts-1");
-        jsonRequest.addProperty("input", text);
-        jsonRequest.addProperty("response_format", "mp3");
-        jsonRequest.addProperty("voice", "nova");
-        jsonRequest.addProperty("speed", 1.6);
+        // 构建多部分请求体
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("text", text)
+                .addFormDataPart("id", "0")
+                .addFormDataPart("format", "mp3")
+                // 添加其他参数...
+                ;
 
+        // 构建请求
         Request request = new Request.Builder()
                 .url(TTS_API_ENDPOINT)
-                .post(RequestBody.create(mediaType, jsonRequest.toString()))
-                .addHeader("Authorization", "Bearer " + TTS_API_KEY) // 使用你的 API 密钥
+                .post(builder.build())
                 .build();
 
         try {
