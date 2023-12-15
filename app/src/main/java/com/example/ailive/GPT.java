@@ -52,6 +52,100 @@ public class GPT implements Runnable {
     private Thread gptThread;  // 添加这一行
     private SegmentProcessingStatus segmentStatus = SegmentProcessingStatus.FIRST_40; // 初始化为首10个字的状态
 
+    public void autonomousMode() throws IOException {
+        ui.getHandler().removeCallbacks(this);
+
+        appendTextToFile("/prompt/RoleConversation.txt", lastAsrText);
+        appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
+
+        URL url = new URL(GPT_API_ENDPOINT);
+        // 创建和配置 HTTP 连接
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("POST");
+        conn.setRequestProperty("Content-Type", "application/json");
+        conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
+        conn.setDoOutput(true);
+
+
+        String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
+        String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt") + "\n"
+                + "请你根据以上角色剧情，猜测阿克娅可能会接着说什么话，输出阿克娅说的话\n";
+        lastAsrText = "";
+
+        String prompt = readFileFromInternalStorage("/prompt/Prompt.txt");
+
+
+        prompt = String.format(prompt, roleDesc, roleConversation);
+        Gson gson = new Gson();
+
+        // 创建 message 对象
+        JsonObject message = new JsonObject();
+        message.addProperty("role", "user");
+        message.addProperty("content", prompt); // 这里使用您的 prompt 变量
+
+        // 创建包含 message 对象的 JSON 数组
+        JsonArray messagesArray = new JsonArray();
+        messagesArray.add(message);
+
+        // 构建整个 JSON 请求对象
+        JsonObject jsonRequest = new JsonObject();
+        jsonRequest.addProperty("model", "gpt-4-1106-preview");
+        jsonRequest.add("messages", messagesArray);
+        jsonRequest.addProperty("stream", true);
+        jsonRequest.addProperty("temperature", 1);
+        jsonRequest.addProperty("top_p", 1.00);
+        jsonRequest.addProperty("presence_penalty", 0.06);
+        jsonRequest.addProperty("max_tokens", 200);
+        jsonRequest.addProperty("frequency_penalty", 0.05);
+
+        // 转换为 JSON 字符串
+        String jsonInputString = gson.toJson(jsonRequest);
+
+        // 发送请求
+        try (OutputStream os = conn.getOutputStream()) {
+            byte[] input = jsonInputString.getBytes("utf-8");
+            os.write(input, 0, input.length);
+        }
+        // 读取响应
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+            String line;
+            while ((line = br.readLine()) != null && !Thread.currentThread().isInterrupted()) {
+                if (line.isEmpty()) {
+                    continue;
+                }
+                // 解析 JSON 数据
+                String jsonData = line.substring("data: ".length()).trim();
+                JSONObject jsonObject = new JSONObject(jsonData);
+                JSONArray choices = jsonObject.getJSONArray("choices");
+                JSONObject choice = choices.getJSONObject(0);
+                JSONObject delta = choice.getJSONObject("delta");
+
+                if (delta.has("content")) {
+                    String content = delta.getString("content");
+                    if (content.isEmpty()) {
+                        continue;
+                    }
+                    // 将内容添加到累积文本
+                    accumulatedText.append(content);
+                    segmentText.append(content);
+                    ui.showText(ui.getGptView(), "GPT：" + accumulatedText); // 显示累积的文本
+                } else {
+                    lastAccumulatedText = accumulatedText.toString();
+                    processSegmentText();
+                    segmentText.setLength(0);
+                    accumulatedText.setLength(0);
+                    break;
+                }
+
+                handleAnswerEvent(jsonData);
+                // 刷新自主定时器
+                ui.getHandler().postDelayed(this, 60 * 1000);
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private enum SegmentProcessingStatus {
         FIRST_40,
         FIRST_40_READY_TO_SPLIT, // 添加此标识
@@ -73,6 +167,9 @@ public class GPT implements Runnable {
     }
 
     public void processAsrText() {
+        // 刷新自主定时器
+        ui.getHandler().postDelayed(this, 60 * 1000);
+
         segmentStatus = SegmentProcessingStatus.FIRST_40;
         gptThread = new Thread(this);  // 使用成员变量
         gptThread.start();
@@ -85,6 +182,9 @@ public class GPT implements Runnable {
             appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
 
             callGptApi();
+
+            // 刷新自主定时器
+            ui.getHandler().postDelayed(this, 60 * 1000);
 
             // 使用匿名线程执行SummarizeConversation
             new Thread(new Runnable() {
@@ -418,14 +518,14 @@ public class GPT implements Runnable {
         conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
         conn.setDoOutput(true);
         // 设置连接超时时间（例如 120 秒）
-        conn.setConnectTimeout(120*1000);
+        conn.setConnectTimeout(120 * 1000);
         // 设置读取超时时间（例如 120 秒）
-        conn.setReadTimeout(120*1000);
+        conn.setReadTimeout(120 * 1000);
         String roleDesc = readFileFromInternalStorage("/prompt/RoleDesc.txt");
         String roleConversation = readFileFromInternalStorage("/prompt/RoleConversation.txt");
-        String generateImageText = "这是角色描述："+roleDesc+"\n"
-                +"这是角色对话："+roleConversation+lastAsrText+lastAccumulatedText+"\n"
-                +"根据角色描述来确定图中女角色的特点，根据角色对话来确定图中女主角的行为和环境，图中只允许出现女主角一个人类。根据以上要求生成画图的prompt";
+        String generateImageText = "这是角色描述：" + roleDesc + "\n"
+                + "这是角色对话：" + roleConversation + lastAsrText + lastAccumulatedText + "\n"
+                + "根据角色描述来确定图中女角色的特点，根据角色对话来确定图中女主角的行为和环境，图中只允许出现女主角一个人类。根据以上要求生成画图的prompt";
 
         Gson gson = new Gson();
 

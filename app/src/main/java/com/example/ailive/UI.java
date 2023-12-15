@@ -354,6 +354,27 @@ public class UI extends Activity {
             }
         });
 
+        Button autonomousModeButton = findViewById(R.id.button_autonomous_mode);
+        autonomousModeButton.getBackground().setAlpha(128); // 半透明
+        autonomousModeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!isAutonomousModeEnabled) {
+                    // 开启自主模式
+                    autonomousModeButton.getBackground().setAlpha(255); // 不透明
+                    isAutonomousModeEnabled = true;
+                    // 立即启动计时器，之后每60秒执行一次
+                    handler.post(funRunnable);
+                } else {
+                    // 关闭自主模式
+                    autonomousModeButton.getBackground().setAlpha(128); // 半透明
+                    isAutonomousModeEnabled = false;
+                    // 取消计时器
+                    handler.removeCallbacks(funRunnable);
+                }
+            }
+        });
+
 
         // 获取包含 GridView 和控制按钮的容器
         LinearLayout gridViewContainer = findViewById(R.id.grid_view_container);
@@ -374,19 +395,6 @@ public class UI extends Activity {
             }
         });
 
-        Button increaseButton = findViewById(R.id.button_increase);
-        increaseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                SparseBooleanArray selectedItems = imageAdapter.getSelectedItems();
-                for (int i = 0; i < selectedItems.size(); i++) {
-                    if (selectedItems.valueAt(i)) {
-                        String selectedImagePath = imageAdapter.imagePaths.get(selectedItems.keyAt(i));
-                        dalle3.increaseImageWeight(selectedImagePath);
-                    }
-                }
-            }
-        });
 
         mHanderThread = new HandlerThread("process_thread");
         mHanderThread.start();
@@ -663,6 +671,7 @@ public class UI extends Activity {
             // 通知数据集改变
             notifyDataSetChanged();
         }
+
         public int getImageWeight(String imagePath) {
             return dalle3.getImageWeights().getOrDefault(imagePath, 1); // 默认权重为 1
         }
@@ -688,6 +697,7 @@ public class UI extends Activity {
 
         return imagePaths;
     }
+
     private String readFileFromInternalStorage(String fileName) throws IOException {
         File file = new File(getFilesDir(), fileName);
         int length = (int) file.length();
@@ -701,11 +711,34 @@ public class UI extends Activity {
     }
 
     private void writeFileToInternalStorage(String filePath, String content) throws IOException {
-        File file = new File(getFilesDir() , filePath);
+        File file = new File(getFilesDir(), filePath);
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(content.getBytes(StandardCharsets.UTF_8));
         }
     }
 
+    private boolean isAutonomousModeEnabled = false;
+
+    public Handler getHandler() {
+        return handler;
+    }
+
+    private Handler handler = new Handler();
+    private Runnable funRunnable = new Runnable() {
+        @Override
+        public void run() {
+            // 在新线程中执行 autonomousMode 方法
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        asr.getGpt().autonomousMode();
+                    } catch (IOException e) {
+                        e.printStackTrace(); // 添加适当的异常处理
+                    }
+                }
+            }).start();
+        }
+    };
 
 }
