@@ -53,7 +53,6 @@ public class GPT implements Runnable {
     private SegmentProcessingStatus segmentStatus = SegmentProcessingStatus.FIRST_40; // 初始化为首10个字的状态
 
     public void autonomousMode() throws IOException {
-        ui.getHandler().removeCallbacks(this);
 
         appendTextToFile("/prompt/RoleConversation.txt", lastAsrText);
         appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
@@ -138,8 +137,6 @@ public class GPT implements Runnable {
                 }
 
                 handleAnswerEvent(jsonData);
-                // 刷新自主定时器
-                ui.getHandler().postDelayed(this, 60 * 1000);
             }
         } catch (JSONException e) {
             throw new RuntimeException(e);

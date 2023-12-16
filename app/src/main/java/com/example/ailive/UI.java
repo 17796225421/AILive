@@ -359,19 +359,7 @@ public class UI extends Activity {
         autonomousModeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (!isAutonomousModeEnabled) {
-                    // 开启自主模式
-                    autonomousModeButton.getBackground().setAlpha(255); // 不透明
-                    isAutonomousModeEnabled = true;
-                    // 立即启动计时器，之后每60秒执行一次
-                    handler.post(funRunnable);
-                } else {
-                    // 关闭自主模式
-                    autonomousModeButton.getBackground().setAlpha(128); // 半透明
-                    isAutonomousModeEnabled = false;
-                    // 取消计时器
-                    handler.removeCallbacks(funRunnable);
-                }
+
             }
         });
 
@@ -717,28 +705,5 @@ public class UI extends Activity {
         }
     }
 
-    private boolean isAutonomousModeEnabled = false;
-
-    public Handler getHandler() {
-        return handler;
-    }
-
-    private Handler handler = new Handler();
-    private Runnable funRunnable = new Runnable() {
-        @Override
-        public void run() {
-            // 在新线程中执行 autonomousMode 方法
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        asr.getGpt().autonomousMode();
-                    } catch (IOException e) {
-                        e.printStackTrace(); // 添加适当的异常处理
-                    }
-                }
-            }).start();
-        }
-    };
 
 }
