@@ -82,7 +82,7 @@ public class UI extends Activity {
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
     private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
     private ImageAdapter imageAdapter;
-    private Boolean isAutonomousMode = false;
+    public Boolean isAutonomousMode = false;
     public long autonomousTime = Long.MAX_VALUE;
 
 

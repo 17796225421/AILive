@@ -436,7 +436,9 @@ public class GPT implements Runnable {
 
     private void processSegmentText() {
         tts.enqueueTextSegment(segmentText.toString());
-        ui.autonomousTime = 60;
+        if (ui.isAutonomousMode == true) {
+            ui.autonomousTime = 60;
+        }
     }
 
     public String getAsrText() {
