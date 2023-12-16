@@ -19,6 +19,7 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.Settings;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.MotionEvent;
 import android.view.View;
@@ -82,7 +83,7 @@ public class UI extends Activity {
     private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
     private ImageAdapter imageAdapter;
     private Boolean isAutonomousMode = false;
-    public static long autonomousTime = Long.MAX_VALUE;
+    public long autonomousTime = Long.MAX_VALUE;
 
 
     @Override
@@ -369,6 +370,7 @@ public class UI extends Activity {
                     // 开启自主模式
                     isAutonomousMode = true;
                     autonomousModeButton.getBackground().setAlpha(255); // 半透明
+                    autonomousTime = 60;
                 } else {
                     // 关闭自主模式
                     isAutonomousMode = false;
@@ -721,28 +723,38 @@ public class UI extends Activity {
     }
 
     private void startAutonomousTimeWatcher() {
-        final Handler handler = new Handler();
-        Runnable decrementAutonomousTimeRunnable = new Runnable() {
-            @Override
-            public void run() {
-                if (autonomousTime > 0) {
-                    autonomousTime--;
-                }
-                handler.postDelayed(this, 1000); // 1秒后再次运行
-            }
-        };
         new Thread(new Runnable() {
             @Override
             public void run() {
-                while (isAutonomousMode) {
+                try {
+                    while (autonomousTime > 0) {
+                        autonomousTime--;
+                        Thread.sleep(1000); // 每秒递减
+                        Log.i("autonomousTime", "autonomousTime: " + autonomousTime);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
                     if (autonomousTime == 0) {
-                        runOnUiThread(new Runnable() {
+                        autonomousTime = Long.MAX_VALUE;
+                        // 在新的子线程中执行耗时操作
+                        new Thread(new Runnable() {
                             @Override
                             public void run() {
-                                autonomousModeAction();
+                                try {
+                                    asr.getGpt().autonomousMode();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
-                        });
-                        break; // 停止线程或重置以重新开始监视
+                        }).start();
                     }
                     try {
                         Thread.sleep(1000); // 1秒检查一次
@@ -752,6 +764,7 @@ public class UI extends Activity {
                 }
             }
         }).start();
+
     }
 
 

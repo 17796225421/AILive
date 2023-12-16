@@ -113,7 +113,7 @@ public class ASR implements INativeNuiCallback {
                     }
                     return;  // 小于5个字，不进行任何处理，直接返回
                 }
-
+                ui.autonomousTime=Long.MAX_VALUE;
                 gpt.onStop();
                 gpt.onStart();
 
