@@ -164,8 +164,6 @@ public class GPT implements Runnable {
     }
 
     public void processAsrText() {
-        // 刷新自主定时器
-        ui.getHandler().postDelayed(this, 60 * 1000);
 
         segmentStatus = SegmentProcessingStatus.FIRST_40;
         gptThread = new Thread(this);  // 使用成员变量
@@ -179,9 +177,6 @@ public class GPT implements Runnable {
             appendTextToFile("/prompt/RoleConversation.txt", lastAccumulatedText);
 
             callGptApi();
-
-            // 刷新自主定时器
-            ui.getHandler().postDelayed(this, 60 * 1000);
 
             // 使用匿名线程执行SummarizeConversation
             new Thread(new Runnable() {

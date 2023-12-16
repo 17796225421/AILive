@@ -81,6 +81,9 @@ public class UI extends Activity {
     private static final int REQUEST_MICROPHONE_PERMISSION = 123; // 请求码
     private static final int REQUEST_MANAGE_ALL_FILES_ACCESS_PERMISSION = 1001;
     private ImageAdapter imageAdapter;
+    private Boolean isAutonomousMode = false;
+    public static long autonomousTime = Long.MAX_VALUE;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,6 +107,9 @@ public class UI extends Activity {
         setButtonState(startButton, true);
         setButtonState(cancelButton, false);
         setButtonState(submitButton, true);
+
+        startAutonomousTimeWatcher();
+
 
 //        changeBgBtn = findViewById(R.id.change_bg_btn);
 
@@ -359,7 +365,16 @@ public class UI extends Activity {
         autonomousModeButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                if (isAutonomousMode == false) {
+                    // 开启自主模式
+                    isAutonomousMode = true;
+                    autonomousModeButton.getBackground().setAlpha(255); // 半透明
+                } else {
+                    // 关闭自主模式
+                    isAutonomousMode = false;
+                    autonomousModeButton.getBackground().setAlpha(128); // 半透明
+                    autonomousTime = Long.MAX_VALUE;
+                }
             }
         });
 
@@ -703,6 +718,40 @@ public class UI extends Activity {
         try (FileOutputStream fos = new FileOutputStream(file)) {
             fos.write(content.getBytes(StandardCharsets.UTF_8));
         }
+    }
+
+    private void startAutonomousTimeWatcher() {
+        final Handler handler = new Handler();
+        Runnable decrementAutonomousTimeRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (autonomousTime > 0) {
+                    autonomousTime--;
+                }
+                handler.postDelayed(this, 1000); // 1秒后再次运行
+            }
+        };
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (isAutonomousMode) {
+                    if (autonomousTime == 0) {
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                autonomousModeAction();
+                            }
+                        });
+                        break; // 停止线程或重置以重新开始监视
+                    }
+                    try {
+                        Thread.sleep(1000); // 1秒检查一次
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
     }
 
 
