@@ -1,6 +1,7 @@
 package com.example.ailive;
 
 import android.content.Context;
+import android.media.audiofx.Visualizer;
 import android.util.Log;
 
 import okhttp3.MediaType;
@@ -24,8 +25,91 @@ import com.example.ailive.token.AccessToken;
 import com.google.gson.JsonObject;
 
 public class TTS {
+    private static TTS instance; // 单例对象
+    private Context context; // Context 需要在初始化时传递给单例
+    private Visualizer visualizer;
+    private float lastComputedRms = 0f;
+
+    private void setupVisualizer() {
+        // 创建Visualizer，附加到MediaPlayer的音频会话
+        visualizer = new Visualizer(audioPlayer.getAudioSessionId());
+        // 设置捕获大小
+        visualizer.setCaptureSize(Visualizer.getCaptureSizeRange()[0]);
+        // 定义一个监听器来捕获音频
+        visualizer.setDataCaptureListener(new Visualizer.OnDataCaptureListener() {
+            @Override
+            public void onWaveFormDataCapture(Visualizer visualizer, byte[] waveform, int samplingRate) {
+                // 计算音量大小
+                lastComputedRms = computeRMS(waveform);
+            }
+
+            @Override
+            public void onFftDataCapture(Visualizer visualizer, byte[] fft, int samplingRate) {
+            }
+        }, Visualizer.getMaxCaptureRate() / 2, true, false);
+
+        visualizer.setEnabled(true);
+    }
+    private float computeRMS(byte[] waveform) {
+        long sum = 0;
+        for (byte b : waveform) {
+            // 将字节转换为无符号整数
+            int val = b & 0xFF;
+            // 调整有符号的数据，因为原始数据范围是-128到127
+            sum += ((val - 128) * (val - 128));
+        }
+        // 计算均方根（RMS）值
+        double rms = Math.sqrt((double) sum / waveform.length);
+
+        // 将RMS值归一化到0-1的范围
+        double rmsNormalized = rms / 128.0;
+
+        // 应用非线性缩放，以便将正常说话时的RMS值调整到约0.6
+        // 使用平方根函数对归一化的RMS值进行调整，可以增加低值并减少高值
+        double scaledRMS = Math.sqrt(rmsNormalized);
+
+        // 根据期望的RMS水平（例如0.6），计算缩放因子
+        // 如果需要，基于实际测试结果调整此缩放因子
+        double targetLevel = 1;
+        double scale = targetLevel / Math.sqrt(targetLevel);
+        scaledRMS *= scale;
+
+        // 确保缩放后的RMS值不会超过1
+        scaledRMS = Math.min(scaledRMS, 1.0);
+
+        return (float) scaledRMS;
+    }
+
+
+
+    public float getCurrentVolume() {
+        return lastComputedRms;
+    }
+
+
+
+    private TTS(Context context) {
+        this.context = context.getApplicationContext();
+        // 其他初始化工作
+    }
+
+    public static void initialize(Context context) {
+        if (instance == null) {
+            synchronized (TTS.class) {
+                if (instance == null) {
+                    instance = new TTS(context);
+                }
+            }
+        }
+    }
+
+    public static TTS getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("TTS is not initialized, call initialize(Context) first");
+        }
+        return instance;
+    }
     private BlockingQueue<String> textSegmentsQueue;
-    private Context context;
     private MediaPlayer audioPlayer;
     private BlockingQueue<File> audioFilesQueue;
     private final String TTS_API_ENDPOINT = "https://s1.v100.vip:11852/voice/bert-vits2";
@@ -34,12 +118,9 @@ public class TTS {
     private Thread audioPlaybackThread;
     private Thread textPlaybackThread;
 
-    public TTS(Context context) {
-        this.context = context;
-    }
-
     public void onStart() {
         audioPlayer = new MediaPlayer();
+        setupVisualizer();
         audioFilesQueue = new LinkedBlockingQueue<>();
         textSegmentsQueue = new LinkedBlockingQueue<>();
         // 启动处理文本队列的线程
@@ -164,6 +245,7 @@ public class TTS {
         if (audioPlayer.isPlaying()) {
             audioPlayer.stop(); // 如果在播放，先停止播放
         }
+        visualizer.release();
         audioPlayer.release();
         textPlaybackThread.interrupt();
         audioPlaybackThread.interrupt();
