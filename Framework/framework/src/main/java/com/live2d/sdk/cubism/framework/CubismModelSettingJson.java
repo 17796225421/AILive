@@ -251,8 +251,8 @@ public class CubismModelSettingJson implements ICubismModelSetting {
             if (refI.get(JsonKey.NAME.key).getString().equals(JsonKey.EYE_BLINK.key)) {
                 eyeBlinkParameterCount = refI.get(JsonKey.IDS.key).getList().size();
                 break;
+                }
             }
-        }
 
         return eyeBlinkParameterCount;
     }
