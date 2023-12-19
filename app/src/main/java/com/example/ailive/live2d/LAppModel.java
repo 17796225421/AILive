@@ -476,6 +476,12 @@ public class LAppModel extends CubismUserModel {
             eyeBlink = CubismEyeBlink.create(modelSetting);
         }
 
+        // 设置眨眼间隔（单位：秒）
+        eyeBlink.setBlinkingInterval(3.0f); // 例如，每4秒眨一次眼
+
+// 设置眨眼动作的持续时间（单位：秒）
+        eyeBlink.setBlinkingSettings(0.1f, 0.05f, 0.15f); // 关闭、闭眼保持、打开眼睛的时间
+
         // 加载呼吸数据
         breath = CubismBreath.create();
         List<CubismBreath.BreathParameterData> breathParameters = new ArrayList<CubismBreath.BreathParameterData>();
