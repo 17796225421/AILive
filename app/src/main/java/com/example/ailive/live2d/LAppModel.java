@@ -7,6 +7,8 @@
 
 package com.example.ailive.live2d;
 
+import android.util.Log;
+
 import com.live2d.sdk.cubism.framework.CubismDefaultParameterId.ParameterId;
 import com.live2d.sdk.cubism.framework.CubismFramework;
 import com.live2d.sdk.cubism.framework.CubismModelSettingJson;
@@ -34,6 +36,10 @@ import java.util.Map;
 import java.util.Random;
 
 public class LAppModel extends CubismUserModel {
+
+    private float mouthOpenTime = 0.0f; // 添加计时器变量
+    private boolean isMouthOpen = false; // 表示嘴巴当前是否应该打开
+
     public LAppModel() {
         if (LAppDefine.MOC_CONSISTENCY_VALIDATION_ENABLE) {
             mocConsistency = true;
@@ -89,91 +95,111 @@ public class LAppModel extends CubismUserModel {
     }
 
     /**
-     * モデルの更新処理。モデルのパラメーターから描画状態を決定する
+     * 模型更新处理。根据模型参数决定绘制状态。
      */
     public void update() {
         final float deltaTimeSeconds = LAppPal.getDeltaTime();
         userTimeSeconds += deltaTimeSeconds;
 
+        // 更新拖动管理器状态
         dragManager.update(deltaTimeSeconds);
         dragX = dragManager.getX();
         dragY = dragManager.getY();
 
-        // モーションによるパラメーター更新の有無
+        // 检查是否有由动作引起的参数更新
         boolean isMotionUpdated = false;
 
-//         前回セーブされた状態をロード
+        // 加载上次保存的状态
         model.loadParameters();
 
-        // モーションの再生がない場合、待機モーションの中からランダムで再生する
+        // 如果没有正在播放的动作，则随机播放一个待机动作
         if (motionManager.isFinished()) {
             startRandomMotion(LAppDefine.MotionGroup.IDLE.getId(), LAppDefine.Priority.IDLE.getPriority());
         } else {
-            // モーションを更新
+            // 更新当前播放的动作
             isMotionUpdated = motionManager.updateMotion(model, deltaTimeSeconds);
         }
 
-        // モデルの状態を保存
+        // 保存模型的当前状态
         model.saveParameters();
 
-        // 不透明度
+        // 更新不透明度
         opacity = model.getModelOpacity();
 
-        // eye blink
-        // メインモーションの更新がないときだけまばたきする
-        if (!isMotionUpdated) {
-            if (eyeBlink != null) {
-                eyeBlink.updateParameters(model, deltaTimeSeconds);
-            }
+        // 如果没有其他动作更新，则执行眨眼动作
+        if (!isMotionUpdated && eyeBlink != null) {
+            eyeBlink.updateParameters(model, deltaTimeSeconds);
         }
 
-        // expression
+        // 更新表情动作
         if (expressionManager != null) {
-            // 表情でパラメータ更新（相対変化）
             expressionManager.updateMotion(model, deltaTimeSeconds);
         }
 
-        // ドラッグ追従機能
-        // ドラッグによる顔の向きの調整
-        model.addParameterValue(idParamAngleX, dragX * 30); // -30から30の値を加える
+        // 更新拖动功能，调整模型的面部和身体方向
+        model.addParameterValue(idParamAngleX, dragX * 30);
         model.addParameterValue(idParamAngleY, dragY * 30);
         model.addParameterValue(idParamAngleZ, dragX * dragY * (-30));
+        model.addParameterValue(idParamBodyAngleX, dragX * 10);
 
-        // ドラッグによる体の向きの調整
-        model.addParameterValue(idParamBodyAngleX, dragX * 10); // -10から10の値を加える
-
-        // ドラッグによる目の向きの調整
-        model.addParameterValue(idParamEyeBallX, dragX);  // -1から1の値を加える
+        // 更新眼球跟踪参数
+        model.addParameterValue(idParamEyeBallX, dragX);
         model.addParameterValue(idParamEyeBallY, dragY);
 
-        // Breath Function
+        // 更新呼吸功能参数
         if (breath != null) {
             breath.updateParameters(model, deltaTimeSeconds);
         }
 
-        // Physics Setting
+        // 更新物理效果
         if (physics != null) {
             physics.evaluate(model, deltaTimeSeconds);
         }
 
-        // Lip Sync Setting
-        if (lipSync) {
-            // リアルタイムでリップシンクを行う場合、システムから音量を取得して0~1の範囲で値を入力します
-            float value = 0.0f;
 
-            for (int i = 0; i < lipSyncIds.size(); i++) {
-                CubismId lipSyncId = lipSyncIds.get(i);
-                model.addParameterValue(lipSyncId, value, 0.8f);
+
+// 在update方法中，更新口型同步设置部分：
+        if (lipSync) {
+            mouthOpenTime += deltaTimeSeconds; // 累积时间
+            Log.d("LipSync", "Delta Time: " + deltaTimeSeconds + ", Mouth Open Time: " + mouthOpenTime);
+
+            if (mouthOpenTime >= 1.0f) { // 检查是否达到一秒钟
+                mouthOpenTime -= 1.0f; // 减去一秒，而不是重置为0, 以保持更精确的计时
+                isMouthOpen = !isMouthOpen; // 改变嘴巴的状态
+                Log.d("LipSync", "Mouth open state changed: " + isMouthOpen);
             }
+
+            // 根据嘴巴的状态设置参数的值
+            float mouthFormValue = isMouthOpen ? 1.0f : 0.0f; // 形成嘴型的参数值
+            float mouthOpenYValue = isMouthOpen ? 1.0f : 0.0f; // 嘴巴张开的参数值
+
+            Log.d("LipSync", "Mouth Form Value: " + mouthFormValue + ", Mouth Open Y Value: " + mouthOpenYValue);
+
+            // 获取参数ID
+            CubismId paramMouthFormId = CubismFramework.getIdManager().getId("ParamMouthForm");
+            CubismId paramMouthOpenYId = CubismFramework.getIdManager().getId("ParamMouthOpenY");
+
+            // 打印参数ID是否获取成功
+            Log.d("LipSync", "ParamMouthFormId: " + paramMouthFormId + ", ParamMouthOpenYId: " + paramMouthOpenYId);
+
+            // 更新模型参数，控制嘴巴的开闭
+            model.addParameterValue(paramMouthFormId, mouthFormValue);
+            model.addParameterValue(paramMouthOpenYId, mouthOpenYValue);
+        } else {
+            Log.d("LipSync", "LipSync is not enabled.");
         }
 
-        // Pose Setting
+
+
+        // 更新姿势参数
         if (pose != null) {
             pose.updateParameters(model, deltaTimeSeconds);
         }
 
+        // 更新模型
         model.update();
     }
+
 
     /**
      * 引数で指定したモーションの再生を開始する。
