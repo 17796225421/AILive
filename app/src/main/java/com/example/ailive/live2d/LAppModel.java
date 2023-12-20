@@ -9,6 +9,7 @@ package com.example.ailive.live2d;
 
 import android.util.Log;
 
+import com.example.ailive.TTS;
 import com.live2d.sdk.cubism.framework.CubismDefaultParameterId.ParameterId;
 import com.live2d.sdk.cubism.framework.CubismFramework;
 import com.live2d.sdk.cubism.framework.CubismModelSettingJson;
@@ -36,9 +37,6 @@ import java.util.Map;
 import java.util.Random;
 
 public class LAppModel extends CubismUserModel {
-
-    private float mouthOpenTime = 0.0f; // 添加计时器变量
-    private boolean isMouthOpen = false; // 表示嘴巴当前是否应该打开
 
     public LAppModel() {
         if (LAppDefine.MOC_CONSISTENCY_VALIDATION_ENABLE) {
@@ -156,31 +154,16 @@ public class LAppModel extends CubismUserModel {
             physics.evaluate(model, deltaTimeSeconds);
         }
 
-
-
-// 在update方法中，更新口型同步设置部分：
+        // 在update方法中，更新口型同步设置部分：
         if (lipSync) {
-            mouthOpenTime += deltaTimeSeconds; // 累积时间
-            Log.d("LipSync", "Delta Time: " + deltaTimeSeconds + ", Mouth Open Time: " + mouthOpenTime);
-
-            if (mouthOpenTime >= 1.0f) { // 检查是否达到一秒钟
-                mouthOpenTime -= 1.0f; // 减去一秒，而不是重置为0, 以保持更精确的计时
-                isMouthOpen = !isMouthOpen; // 改变嘴巴的状态
-                Log.d("LipSync", "Mouth open state changed: " + isMouthOpen);
-            }
 
             // 根据嘴巴的状态设置参数的值
-            float mouthFormValue = isMouthOpen ? 1.0f : 0.0f; // 形成嘴型的参数值
-            float mouthOpenYValue = isMouthOpen ? 1.0f : 0.0f; // 嘴巴张开的参数值
-
-            Log.d("LipSync", "Mouth Form Value: " + mouthFormValue + ", Mouth Open Y Value: " + mouthOpenYValue);
-
+            float mouthFormValue = 1.0f; // 形成嘴型的参数值，目前固定0.1f
+            float mouthOpenYValue = TTS.getInstance().getCurrentVolume();  // 嘴巴张开的参数值
+            Log.i("mouthOpenYValue",String.valueOf(mouthOpenYValue));
             // 获取参数ID
             CubismId paramMouthFormId = CubismFramework.getIdManager().getId("ParamMouthForm");
             CubismId paramMouthOpenYId = CubismFramework.getIdManager().getId("ParamMouthOpenY");
-
-            // 打印参数ID是否获取成功
-            Log.d("LipSync", "ParamMouthFormId: " + paramMouthFormId + ", ParamMouthOpenYId: " + paramMouthOpenYId);
 
             // 更新模型参数，控制嘴巴的开闭
             model.addParameterValue(paramMouthFormId, mouthFormValue);
@@ -188,8 +171,6 @@ public class LAppModel extends CubismUserModel {
         } else {
             Log.d("LipSync", "LipSync is not enabled.");
         }
-
-
 
         // 更新姿势参数
         if (pose != null) {

@@ -1,9 +1,18 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:opencv="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="mit.alibaba.nuidemo.DialogActivity">
+    tools:context="MainActivity">
+
+    <org.opencv.android.JavaCameraView
+        android:id="@+id/tutorial1_activity_java_surface_view"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        opencv:camera_id="any"
+        opencv:show_fps="true"
+        tools:ignore="MissingConstraints" />
 
     <android.opengl.GLSurfaceView
         android:id="@+id/live2dView"
@@ -17,7 +26,8 @@
         android:layout_alignParentTop="true"
         android:layout_marginTop="20dp"
         android:text="GPT"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        tools:ignore="MissingConstraints" />
 
     <EditText
         android:id="@+id/askView"
@@ -26,7 +36,8 @@
         android:layout_above="@+id/button_container"
         android:hint="提问"
         android:layout_marginBottom="10dp"
-        android:textColor="@android:color/white" />
+        android:textColor="@android:color/white"
+        tools:ignore="MissingConstraints" />
 
     <LinearLayout
         android:id="@+id/button_container"
@@ -35,7 +46,8 @@
         android:layout_alignParentBottom="true"
         android:gravity="center"
         android:orientation="horizontal"
-        android:padding="10dp">
+        android:padding="10dp"
+        tools:ignore="MissingConstraints">
 
         <!-- 开始 button -->
         <Button
@@ -153,4 +165,5 @@
         </LinearLayout>
     </LinearLayout>
 
-</RelativeLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -160,7 +160,8 @@ public class GPT implements Runnable {
         this.context = context;
         accumulatedText = new StringBuilder();
         segmentText = new StringBuilder();
-        tts = new TTS(context);
+        TTS.initialize(context);
+        tts = TTS.getInstance();
     }
 
     public void processAsrText() {

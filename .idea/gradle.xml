@@ -13,6 +13,7 @@
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Framework" />
             <option value="$PROJECT_DIR$/Framework/framework" />
+            <option value="$PROJECT_DIR$/OpenCV" />
             <option value="$PROJECT_DIR$/app" />
           </set>
         </option>

@@ -22,8 +22,10 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.MotionEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -43,6 +45,9 @@ import com.example.ailive.live2d.GLRenderer;
 import com.example.ailive.live2d.LAppDelegate;
 
 import org.json.JSONException;
+import org.opencv.android.CameraActivity;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.OpenCVLoader;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -61,7 +66,7 @@ import java.util.Comparator;
 import java.util.List;
 
 // 1. UI 类
-public class UI extends Activity {
+public class UI extends CameraActivity {
 
     // 你的UI组件和方法放这里，例如开始、停止按钮的监听器等
     private Button startButton;
@@ -75,7 +80,7 @@ public class UI extends Activity {
     private HandlerThread mHanderThread;
     private static final int REQUEST_PERMISSION_READ_EXTERNAL_STORAGE = 1;
     private static final int REQUEST_BLUETOOTH_PERMISSIONS = 1;
-
+    private CameraBridgeViewBase mOpenCvCameraView;
     private ASR asr;
     //    private SD sd;
     private Dalle3 dalle3;
@@ -89,7 +94,29 @@ public class UI extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        OpenCVLoader.initDebug();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         setContentView(R.layout.activity_main);
+
+
+        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
+        mOpenCvCameraView.setCvCameraViewListener(OpenCV.getInstance());
+//        // Set the size to 1 x 1 pixels
+//        mOpenCvCameraView.setLayoutParams(new ViewGroup.LayoutParams(1, 1));
+//        // Or move it off screen
+//        mOpenCvCameraView.setTranslationX(-10000);
+
+        try {
+            OpenCV.init(this);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        new Thread(() -> {
+            while (true) {
+
+            }
+        }).start();
 
         live2DView = findViewById(R.id.live2dView);
         live2DView.setEGLContextClientVersion(2);
@@ -492,7 +519,10 @@ public class UI extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-
+        if (mOpenCvCameraView != null) {
+            mOpenCvCameraView.setCameraIndex(CameraBridgeViewBase.CAMERA_ID_FRONT); // Front-facing camera
+            mOpenCvCameraView.enableView();
+        }
         live2DView.onResume();
 
         View decor = this.getWindow().getDecorView();
@@ -512,6 +542,8 @@ public class UI extends Activity {
 
         live2DView.onPause();
         LAppDelegate.getInstance().onPause();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
     }
 
     @Override
@@ -519,6 +551,8 @@ public class UI extends Activity {
         super.onDestroy();
 
         LAppDelegate.getInstance().onDestroy();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
 
     }
 
@@ -766,6 +800,9 @@ public class UI extends Activity {
         }).start();
 
     }
-
+    @Override
+    protected List<? extends CameraBridgeViewBase> getCameraViewList() {
+        return Collections.singletonList(mOpenCvCameraView);
+    }
 
 }

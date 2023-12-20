@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 rootProject.name = "AILive"
 include ':Framework:framework'
 include ':app'
+include ':OpenCV'
