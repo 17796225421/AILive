@@ -28,6 +28,16 @@ public class OpenCV implements CameraBridgeViewBase.CvCameraViewListener2 {
     private static OpenCV instance;
     private static CascadeClassifier eyeDetector;
 
+    public float getAvgEyeX() {
+        return avgEyeX;
+    }
+
+    public float getAvgEyeY() {
+        return avgEyeY;
+    }
+
+    private float avgEyeX = 0;
+    private float avgEyeY = 0;
     private OpenCV()  {
 
     }
@@ -96,6 +106,8 @@ public class OpenCV implements CameraBridgeViewBase.CvCameraViewListener2 {
                     new Size() , new Size());
 
         Rect[] eyesArray = eyes.toArray();
+        float totalEyeX = 0;
+        float totalEyeY = 0;
         for (Rect rect : eyesArray) {
             Imgproc.rectangle(rotatedFrame, rect.tl(), rect.br(), new Scalar(255, 0, 0, 255), 3);
 
@@ -112,13 +124,27 @@ public class OpenCV implements CameraBridgeViewBase.CvCameraViewListener2 {
 
             // 将毫秒数格式化为日期对象
             Date resultDate = new Date(timeMillis);
-
+            totalEyeX += eyeX;
+            totalEyeY += eyeY;
             Log.i("Eye ", "Eye center at (" + eyeX + ", " + eyeY + "), time: " + sdf.format(resultDate));
         }
+        if (eyesArray.length != 0) {
+            avgEyeX = totalEyeX / eyesArray.length;
+            avgEyeY = totalEyeY / eyesArray.length;
+
+            // map the averages to range [-1, 1]
+            avgEyeX = mapToRange(avgEyeX, 0f, 2000f, -1f, 1f);
+            avgEyeY = mapToRange(avgEyeY, 0f, 2000f, -1f, 1f);
+        }
+        Log.i("平均 ", "Eye center at (" + avgEyeX + ", " + avgEyeY );
+
 
         // 将图像顺时针旋转90度，恢复原始尺寸
         Core.rotate(rotatedFrame, frame, Core.ROTATE_90_CLOCKWISE);
 
         return frame;
+    }
+    private float mapToRange(float value, float inputMin, float inputMax, float outputMin, float outputMax) {
+        return (value - inputMin) / (inputMax - inputMin) * (outputMax - outputMin) + outputMin;
     }
 }

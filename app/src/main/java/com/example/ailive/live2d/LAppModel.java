@@ -9,6 +9,7 @@ package com.example.ailive.live2d;
 
 import android.util.Log;
 
+import com.example.ailive.OpenCV;
 import com.example.ailive.TTS;
 import com.live2d.sdk.cubism.framework.CubismDefaultParameterId.ParameterId;
 import com.live2d.sdk.cubism.framework.CubismFramework;
@@ -134,15 +135,17 @@ public class LAppModel extends CubismUserModel {
             expressionManager.updateMotion(model, deltaTimeSeconds);
         }
 
+        float avgEyeX = OpenCV.getInstance().getAvgEyeX();
+        float avgEyeY = OpenCV.getInstance().getAvgEyeY();
         // 更新拖动功能，调整模型的面部和身体方向
-        model.addParameterValue(idParamAngleX, dragX * 30);
-        model.addParameterValue(idParamAngleY, dragY * 30);
-        model.addParameterValue(idParamAngleZ, dragX * dragY * (-30));
-        model.addParameterValue(idParamBodyAngleX, dragX * 10);
+        model.addParameterValue(idParamAngleX, avgEyeX * 30);
+        model.addParameterValue(idParamAngleY, avgEyeY * 30);
+        model.addParameterValue(idParamAngleZ, avgEyeX * avgEyeY * (-30));
+        model.addParameterValue(idParamBodyAngleX, avgEyeX * 10);
 
         // 更新眼球跟踪参数
-        model.addParameterValue(idParamEyeBallX, dragX);
-        model.addParameterValue(idParamEyeBallY, dragY);
+        model.addParameterValue(idParamEyeBallX, avgEyeX);
+        model.addParameterValue(idParamEyeBallY, avgEyeY);
 
         // 更新呼吸功能参数
         if (breath != null) {
