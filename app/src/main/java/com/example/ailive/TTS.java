@@ -189,7 +189,7 @@ public class TTS {
         MultipartBody.Builder builder = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("text", text)
-                .addFormDataPart("id", "0")
+                .addFormDataPart("id", "1")
                 .addFormDataPart("format", "mp3")
                 // 添加其他参数...
                 ;
