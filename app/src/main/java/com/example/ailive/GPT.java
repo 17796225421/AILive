@@ -154,6 +154,8 @@ public class GPT implements Runnable {
     private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
     private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
 
+    private final String FAST_GPT_API_ENDPOINT = "https://s1.v100.vip:21238/api/v1/chat/completions";
+    private final String FAST_GPT_API_KEY = "fastgpt-xBMyBTvJMKKhiSvN3nZdLWRjBecBxGmyT";
 
     GPT(UI ui, Context context) {
         this.ui = ui;
@@ -296,12 +298,12 @@ public class GPT implements Runnable {
     }
 
     public void callGptApi() throws IOException {
-        URL url = new URL(GPT_API_ENDPOINT);
+        URL url = new URL(FAST_GPT_API_ENDPOINT);
         // 创建和配置 HTTP 连接
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "application/json");
-        conn.setRequestProperty("Authorization", "Bearer " + GPT_API_KEY); // 使用您的 GPT API 密钥
+        conn.setRequestProperty("Authorization", "Bearer " + FAST_GPT_API_KEY); // 使用您的 GPT API 密钥
         conn.setDoOutput(true);
 
 
@@ -328,14 +330,9 @@ public class GPT implements Runnable {
 
         // 构建整个 JSON 请求对象
         JsonObject jsonRequest = new JsonObject();
-        jsonRequest.addProperty("model", "gpt-4-1106-preview");
         jsonRequest.add("messages", messagesArray);
         jsonRequest.addProperty("stream", true);
-        jsonRequest.addProperty("temperature", 1);
-        jsonRequest.addProperty("top_p", 1.00);
-        jsonRequest.addProperty("presence_penalty", 0.06);
-        jsonRequest.addProperty("max_tokens", 200);
-        jsonRequest.addProperty("frequency_penalty", 0.05);
+        jsonRequest.addProperty("detail",false);
 
         // 转换为 JSON 字符串
         String jsonInputString = gson.toJson(jsonRequest);
