@@ -151,7 +151,7 @@ public class GPT implements Runnable {
         DONE
     }
 
-    private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
+    private final String GPT_API_ENDPOINT = "https://gpts.onechat.fun/v1/chat/completions";
     private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
 
     private final String FAST_GPT_API_ENDPOINT = "https://s1.v100.vip:21238/api/v1/chat/completions";

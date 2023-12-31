@@ -57,7 +57,7 @@ public class Dalle3 {
 
     private Map<String, Integer> imageWeights = new HashMap<>();
 
-    private final String GPT_API_ENDPOINT = "https://chatapi.onechat.fun/v1/chat/completions";
+    private final String GPT_API_ENDPOINT = "https://gpts.onechat.fun//v1/chat/completions";
     private final String GPT_API_KEY = "sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6";
 
 
@@ -158,7 +158,7 @@ public class Dalle3 {
 
         RequestBody body = RequestBody.create(jsonObject.toString(), MediaType.parse("application/json"));
         Request request = new Request.Builder()
-                .url("https://chatapi.onechat.fun/v1/images/generations")
+                .url("https://gpts.onechat.fun/v1/images/generations")
                 .header("Authorization", "Bearer sk-Ze1UOghr5qtuAdPRB4Dd030878B441EeBe92F2699e0bA8A6")
                 .post(body)
                 .build();
